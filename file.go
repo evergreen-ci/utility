@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
 )
 
@@ -19,17 +20,24 @@ func FileExists(path string) bool {
 	return !os.IsNotExist(err)
 }
 
-// WriteFile provides a clearer interface for writing string data to a
-// file.
-func WriteFile(path string, data string) error {
+// WriteRawFile writes a sequence of byes to a new file created at the
+// specified path.
+func WriteRawFile(path string, data []byte) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return errors.Wrapf(err, "problem creating file '%s'", path)
 	}
 
-	_, err = file.WriteString(data)
+	n, err := file.Write(data)
 	if err != nil {
-		grip.Warning(errors.Wrapf(file.Close(), "problem closing file '%s' after error", path))
+		grip.Warning(message.WrapError(errors.WithStack(file.Close()),
+			message.Fields{
+				"message":       "problem closing file after error",
+				"path":          path,
+				"bytes_written": n,
+				"input_len":     len(data),
+			}))
+
 		return errors.Wrapf(err, "problem writing data to file '%s'", path)
 	}
 
@@ -38,4 +46,10 @@ func WriteFile(path string, data string) error {
 	}
 
 	return nil
+}
+
+// WriteFile provides a clearer interface for writing string data to a
+// file.
+func WriteFile(path string, data string) error {
+	return errors.WithStack(WriteRawFile(path, []byte(data)))
 }

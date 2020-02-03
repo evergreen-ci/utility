@@ -2,6 +2,7 @@ package utility
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -10,24 +11,30 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// ReadYAML provides an alternate interface to yaml.Unmarshal that
+// reads data from an io.ReadCloser.
 func ReadYAML(r io.ReadCloser, target interface{}) error {
 	defer r.Close()
-	bytes, err := ioutil.ReadAll(r)
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	return errors.WithStack(yaml.Unmarshal(bytes, data))
+	return errors.WithStack(yaml.Unmarshal(data, target))
 }
 
+// ReadJSON provides an alternate interface to json.Unmarshal that
+// reads data from an io.ReadCloser.
 func ReadJSON(r io.ReadCloser, target interface{}) error {
 	defer r.Close()
-	bytes, err := ioutil.ReadAll(r)
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	return errors.WithStack(json.Unmarshal(bytes, data))
+	return errors.WithStack(json.Unmarshal(data, target))
 }
 
+// ReadYAMLFile parses yaml into the target argument from the file
+// located at the specifed path.
 func ReadYAMLFile(path string, target interface{}) error {
 	if !FileExists(path) {
 		return errors.Errorf("file '%s' does not exist", path)
@@ -38,9 +45,11 @@ func ReadYAMLFile(path string, target interface{}) error {
 		return errors.Wrapf(err, "invalid file: %s", path)
 	}
 
-	return errors.Wrap(ReadYAML(file, target), "problem reading yaml from '%s'", path)
+	return errors.Wrapf(ReadYAML(file, target), "problem reading yaml from '%s'", path)
 }
 
+// ReadJSONFile parses json into the target argument from the file
+// located at the specifed path.
 func ReadJSONFile(path string, target interface{}) error {
 	if !FileExists(path) {
 		return errors.Errorf("file '%s' does not exist", path)
@@ -51,27 +60,39 @@ func ReadJSONFile(path string, target interface{}) error {
 		return errors.Wrapf(err, "invalid file: %s", path)
 	}
 
-	return errors.Wrap(ReadYAML(file, target), "problem reading json from '%s'", path)
+	return errors.Wrapf(ReadYAML(file, target), "problem reading json from '%s'", path)
 }
 
-func WriteJSON(out io.Writer, data interface{}) error {
-	out, err := json.Marshal(data)
+// PrintJSON marshals the data to a pretty-printed (indented) string
+// and then prints it to standard output.
+func PrintJSON(data interface{}) error {
+	out, err := json.MarshalIndent(data, "", "   ")
 	if err != nil {
-		return errors.Wrap(err, "problem writing JSON")
+		return errors.Wrap(err, "problem writing data")
 	}
 
+	fmt.Println(string(out))
 	return nil
 }
 
+// WriteJSONFile marshals the data into json and writes it into a file
+// at the specified path.
 func WriteJSONFile(fn string, data interface{}) error {
-	file, err := os.Create(fn)
+	payload, err := json.Marshal(data)
 	if err != nil {
-		return errors.Wrapf(err, "problem creating file '%s'", fn)
+		return errors.Wrap(err, "problem constructing JSON")
 	}
 
-	err = WriteJSON(file, data)
-	if err != nil {
+	return errors.WithStack(WriteRawFile(fn, payload))
+}
 
+// WriteYAMLFile marshals the data into json and writes it into a file
+// at the specified path.
+func WriteYAMLFile(fn string, data interface{}) error {
+	payload, err := yaml.Marshal(data)
+	if err != nil {
+		return errors.Wrap(err, "problem constructing YAML")
 	}
 
+	return errors.WithStack(WriteRawFile(fn, payload))
 }
