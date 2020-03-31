@@ -82,6 +82,7 @@ type HTTPRetryConfiguration struct {
 	TemporaryErrors bool
 	Methods         []string
 	Statuses        []int
+	Errors          []error
 }
 
 // NewDefaultHTTPRetryConf constructs a HTTPRetryConfiguration object
@@ -129,6 +130,17 @@ func GetHTTPRetryableClient(conf HTTPRetryConfiguration) *http.Client {
 
 	if conf.TemporaryErrors {
 		statusRetries = append(statusRetries, rehttp.RetryTemporaryErr())
+	}
+
+	if len(conf.Errors) > 0 {
+		statusRetries = append(statusRetries, rehttp.RetryIsErr(func(err error) bool {
+			for _, errToCheck := range conf.Errors {
+				if err == errToCheck {
+					return true
+				}
+			}
+			return false
+		}))
 	}
 
 	retryFns := []rehttp.RetryFn{rehttp.RetryAny(statusRetries...)}
