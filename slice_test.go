@@ -92,5 +92,5 @@ func TestIndexOf(t *testing.T) {
 	assert.Equal(t, 0, IndexOf([]string{"a", "b", "c", "d", "e"}, "a"))
 	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "f"))
 	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "1"))
-	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "ø"))
+	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "æ"))
 }
