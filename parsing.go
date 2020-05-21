@@ -22,6 +22,16 @@ func ReadYAML(r io.ReadCloser, target interface{}) error {
 	return errors.WithStack(yaml.Unmarshal(data, target))
 }
 
+// ReadYAMLStrict is the same as ReadYAML but uses strict unmarshalling.
+func ReadYAMLStrict(r io.ReadCloser, target interface{}) error {
+	defer r.Close()
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return errors.WithStack(yaml.UnmarshalStrict(data, target))
+}
+
 // ReadJSON provides an alternate interface to json.Unmarshal that
 // reads data from an io.ReadCloser.
 func ReadJSON(r io.ReadCloser, target interface{}) error {
