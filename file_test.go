@@ -25,6 +25,14 @@ func TestFile(t *testing.T) {
 }
 
 func TestBuildFileList(t *testing.T) {
+	t.Run("DoesNotPanicForMissingRoot", func(t *testing.T) {
+		assert.NotPanics(t, func() {
+			list, err := BuildFileList("this/path/does/not/exist", "*")
+			require.Error(t, err)
+			assert.Empty(t, list)
+		})
+	})
+
 	wd, err := ioutil.TempDir("", t.Name())
 	require.NoError(t, err, "error getting working directory")
 	defer func() {
