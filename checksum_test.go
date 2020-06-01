@@ -29,7 +29,7 @@ func TestChecksumFile(t *testing.T) {
 				assert.Zero(t, out)
 			})
 			t.Run("FileIsNotReadable", func(t *testing.T) {
-				out, err := ChecksumFile(hash.New(), "/etc/passwd")
+				out, err := ChecksumFile(hash.New(), "/root/.bashrc")
 				assert.Error(t, err)
 				assert.Zero(t, out)
 			})
