@@ -61,10 +61,13 @@ func TestFileListBuilder(t *testing.T) {
 		"dir2",
 	}
 
+	var allFiles []string
+
 	for _, fileName := range fileNames {
 		f, err := os.Create(filepath.Join(tmpDir, fileName))
 		require.NoError(t, err, "error creating test file")
 		require.NoError(t, f.Close(), "error closing test file")
+		allFiles = append(allFiles, fileName)
 	}
 
 	for _, dirName := range dirNames {
@@ -75,6 +78,7 @@ func TestFileListBuilder(t *testing.T) {
 			f, err := os.Create(path)
 			require.NoError(t, err, "error creating test file")
 			require.NoError(t, f.Close(), "error closing test file")
+			allFiles = append(allFiles, filepath.Join(dirName, fileName))
 		}
 	}
 
@@ -181,5 +185,76 @@ func TestFileListBuilder(t *testing.T) {
 				assert.ElementsMatch(t, testCase.expected, files)
 			})
 		}
+	})
+
+	t.Run("NewFileListBuilder", func(t *testing.T) {
+		t.Run("MatchesAllFiles", func(t *testing.T) {
+			b := NewFileListBuilder(tmpDir)
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.ElementsMatch(t, allFiles, files)
+		})
+	})
+	t.Run("AlwaysMatch", func(t *testing.T) {
+		t.Run("IncludesAllFilesAndDirectories", func(t *testing.T) {
+			b := NewFileListBuilder(tmpDir)
+			b.Include = AlwaysMatch{}
+			files, err := b.Build()
+			require.NoError(t, err)
+			allFilesAndDirs := append(allFiles, dirNames...)
+			allFilesAndDirs = append(allFilesAndDirs, "")
+			assert.ElementsMatch(t, allFilesAndDirs, files)
+		})
+		t.Run("ExcludesAllFilesAndDirectories", func(t *testing.T) {
+			b := NewFileListBuilder(tmpDir)
+			b.Exclude = AlwaysMatch{}
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.Empty(t, files)
+		})
+	})
+
+	t.Run("FileAlwaysMatch", func(t *testing.T) {
+		t.Run("IncludesAllFiles", func(t *testing.T) {
+			b := FileListBuilder{
+				Include:    FileAlwaysMatch{},
+				WorkingDir: tmpDir,
+			}
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.ElementsMatch(t, allFiles, files)
+		})
+		t.Run("ExcludesAllFiles", func(t *testing.T) {
+			b := FileListBuilder{
+				Include:    AlwaysMatch{},
+				Exclude:    FileAlwaysMatch{},
+				WorkingDir: tmpDir,
+			}
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.ElementsMatch(t, append(dirNames, ""), files)
+		})
+	})
+
+	t.Run("NeverMatch", func(t *testing.T) {
+		t.Run("IncludesNoFiles", func(t *testing.T) {
+			b := FileListBuilder{
+				Include:    NeverMatch{},
+				WorkingDir: tmpDir,
+			}
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.Empty(t, files)
+		})
+		t.Run("ExcludesNoFiles", func(t *testing.T) {
+			b := FileListBuilder{
+				Include:    FileAlwaysMatch{},
+				Exclude:    NeverMatch{},
+				WorkingDir: tmpDir,
+			}
+			files, err := b.Build()
+			require.NoError(t, err)
+			assert.ElementsMatch(t, allFiles, files)
+		})
 	})
 }

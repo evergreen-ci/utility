@@ -93,14 +93,22 @@ type FileMatcher interface {
 }
 
 // AlwaysMatch provides a FileMatcher implementation that will always match a
-// file.
+// file or directory.
 type AlwaysMatch struct{}
 
 // Match always returns true.
 func (m AlwaysMatch) Match(string, os.FileInfo) bool { return true }
 
+// FileFileAlwaysMatch provides a FileMatcher implementation that will always
+// match a file, but not a directory.
+type FileAlwaysMatch struct{}
+
+func (m FileAlwaysMatch) Match(_ string, info os.FileInfo) bool {
+	return !info.IsDir()
+}
+
 // NeverMatch provides a FileMatcher implementation that will never match a
-// file.
+// file or directory.
 type NeverMatch struct{}
 
 // Match always returns false.
@@ -121,10 +129,10 @@ type FileListBuilder struct {
 }
 
 // NewFileListBuilder returns a default FileListBuilder that will match all
-// files within the given directory dir.
+// files (but not directory names) within the given directory dir.
 func NewFileListBuilder(dir string) *FileListBuilder {
 	return &FileListBuilder{
-		Include:    AlwaysMatch{},
+		Include:    FileAlwaysMatch{},
 		Exclude:    NeverMatch{},
 		WorkingDir: dir,
 	}
