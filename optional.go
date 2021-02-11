@@ -159,7 +159,7 @@ func ToStringPtrSlice(in []string) []*string {
 	if in == nil {
 		return nil
 	}
-	var res []*string
+	res := []*string{}
 	for _, each := range in {
 		res = append(res, ToStringPtr(each))
 	}
@@ -172,7 +172,7 @@ func FromStringPtrSlice(in []*string) []string {
 	if in == nil {
 		return nil
 	}
-	var res []string
+	res := []string{}
 	for _, each := range in {
 		res = append(res, FromStringPtr(each))
 	}
