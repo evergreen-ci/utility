@@ -76,7 +76,7 @@ type RetryOptions struct {
 // It will set min to 100ms if not set.
 // It will set max to (min * 2^attempts) if not set.
 // It will set attempts to 1 if not set.
-func (o *RetryOptions) Validate() error {
+func (o *RetryOptions) Validate() {
 	if o.MaxAttempts <= 0 {
 		o.MaxAttempts = 1
 	}
@@ -89,8 +89,6 @@ func (o *RetryOptions) Validate() error {
 	if o.MaxDelay <= 0 {
 		o.MaxDelay = time.Duration(float64(o.MinDelay) * math.Pow(backoffFactor, float64(o.MaxAttempts)))
 	}
-
-	return nil
 }
 
 // backoffFactor is the exponential backoff factor.
