@@ -49,6 +49,9 @@ func Retry(ctx context.Context, op RetriableFunc, opts RetryOptions) error {
 	}
 }
 
+// backoffFactor is the exponential backoff factor.
+const backoffFactor = 2
+
 func getBackoff(opts RetryOptions) *backoff.Backoff {
 	opts.Validate()
 	return &backoff.Backoff{
@@ -92,6 +95,3 @@ func (o *RetryOptions) Validate() {
 		o.MaxDelay = time.Duration(float64(o.MinDelay) * math.Pow(backoffFactor, float64(o.MaxAttempts)))
 	}
 }
-
-// backoffFactor is the exponential backoff factor.
-const backoffFactor = 2
