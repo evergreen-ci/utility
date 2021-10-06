@@ -354,7 +354,7 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*htt
 
 		// if we get here it should most likely be a 5xx status code
 
-		return true, errors.Errorf("server returned status %s", resp.StatusCode)
+		return true, errors.Errorf("server returned status %d", resp.StatusCode)
 	}, opts); err != nil {
 		return resp, err
 	}
