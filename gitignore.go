@@ -4,8 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
-	ignore "github.com/sabhiram/go-git-ignore"
+	ignore "github.com/sabhiram/go-gitignore"
 )
 
 // gitignoreFileMatcher contains the information for building a list of files in the given directory.
@@ -20,16 +19,13 @@ type gitignoreFileMatcher struct {
 // expressions rooted at the given prefix. The expressions should be gitignore
 // ignore expressions: antyhing that would be matched - and therefore ignored by
 // git - is matched.
-func NewGitignoreFileMatcher(prefix string, exprs ...string) (FileMatcher, error) {
-	ignorer, err := ignore.CompileIgnoreLines(exprs...)
-	if err != nil {
-		return nil, errors.Wrap(err, "compiling gitignore expressions")
-	}
+func NewGitignoreFileMatcher(prefix string, exprs ...string) FileMatcher {
+	ignorer := ignore.CompileIgnoreLines(exprs...)
 	m := &gitignoreFileMatcher{
 		ignorer: ignorer,
 		prefix:  prefix,
 	}
-	return m, nil
+	return m
 }
 
 func (m *gitignoreFileMatcher) Match(file string, info os.FileInfo) bool {
