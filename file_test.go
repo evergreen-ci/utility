@@ -28,8 +28,7 @@ func TestFileListBuilder(t *testing.T) {
 	t.Run("DoesNotPanicForMissingRoot", func(t *testing.T) {
 		assert.NotPanics(t, func() {
 			dir := "this/path/does/not/exist"
-			m, err := NewGitignoreFileMatcher(dir, "*")
-			require.NoError(t, err)
+			m := NewGitIgnoreFileMatcher(dir, "*")
 			b := FileListBuilder{
 				WorkingDir: dir,
 				Include:    m,
@@ -82,7 +81,7 @@ func TestFileListBuilder(t *testing.T) {
 		}
 	}
 
-	t.Run("GitignoreFileBuilder", func(t *testing.T) {
+	t.Run("GitIgnoreFileBuilder", func(t *testing.T) {
 		for testName, testCase := range map[string]struct {
 			includeExprs []string
 			excludeExprs []string
@@ -167,12 +166,10 @@ func TestFileListBuilder(t *testing.T) {
 			},
 		} {
 			t.Run(testName, func(t *testing.T) {
-				include, err := NewGitignoreFileMatcher(tmpDir, testCase.includeExprs...)
-				require.NoError(t, err)
+				include := NewGitIgnoreFileMatcher(tmpDir, testCase.includeExprs...)
 				var exclude FileMatcher
 				if len(testCase.excludeExprs) != 0 {
-					exclude, err = NewGitignoreFileMatcher(tmpDir, testCase.excludeExprs...)
-					require.NoError(t, err)
+					exclude = NewGitIgnoreFileMatcher(tmpDir, testCase.excludeExprs...)
 				}
 				b := FileListBuilder{
 					WorkingDir: tmpDir,
