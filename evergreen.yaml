@@ -26,11 +26,11 @@ functions:
     - command: git.get_project
       type: system
       params:
-        directory: ${workdir}/utility
+        directory: utility
     - command: subprocess.exec
       type: setup
       params:
-        working_dir: ${workdir}/utility
+        working_dir: utility
         binary: make
         args: ["mod-tidy"]
         include_expansions_in_env: ["GOROOT"]
@@ -38,7 +38,7 @@ functions:
     command: subprocess.exec
     type: test
     params:
-      working_dir: ${workdir}/utility
+      working_dir: utility
       binary: make
       args: ["${target}"]
       include_expansions_in_env: ["DISABLE_COVERAGE", "GOROOT", "RACE_DETECTOR"]
@@ -66,6 +66,16 @@ tasks:
   - <<: *run-build
     tags: ["report"]
     name: lint-utility
+
+  - name: verify-mod-tidy
+    tags: ["report"]
+    commands:
+      - command: git.get_project
+        type: system
+        params:
+          directory: utility
+      - func: run-make
+        vars: { target: "${task_name}" }
 
 #######################################
 #           Buildvariants             #
