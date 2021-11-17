@@ -76,8 +76,8 @@ $(buildDir)/run-benchmarks: cmd/run-benchmarks/run_benchmarks.go
 testOutput := $(foreach target,$(testPackages),$(buildDir)/output.$(target).test)
 lintOutput := $(foreach target,$(lintPackages),$(buildDir)/output.$(target).lint)
 coverageOutput := $(foreach target,$(testPackages),$(buildDir)/output.$(target).coverage)
-coverageHtmlOutput := $(foreach target,$(testPackages),$(buildDir)/output.$(target).coverage.html)
-.PRECIOUS: $(coverageOutput) $(coverageHtmlOutput) $(lintOutput) $(testOutput)
+htmlCoverageOutput := $(foreach target,$(testPackages),$(buildDir)/output.$(target).coverage.html)
+.PRECIOUS: $(coverageOutput) $(htmlCoverageOutput) $(lintOutput) $(testOutput)
 # end output files
 
 # start basic development targets
@@ -91,8 +91,8 @@ test: $(testOutput)
 benchmarks: $(buildDir)/run-benchmarks .FORCE
 	./$(buildDir)/run-benchmarks $(run-benchmark)
 coverage: $(coverageOutput)
-coverage-html: $(coverageHtmlOutput)
-phony += compile lint test coverage coverage-html benchmarks proto
+html-coverage: $(htmlCoverageOutput)
+phony += compile lint test coverage html-coverage benchmarks proto
 # end front-ends
 
 
