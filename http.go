@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -370,3 +371,55 @@ func RetryHTTPDelay(opts RetryOptions) HTTPDelayFunction {
 		return backoff.ForAttempt(float64(index))
 	}
 }
+
+// MockHandler implements the http.Handler interface for mock HTTP servers. See
+// the `https://pkg.go.dev/net/http/httptest` for more information on mocking
+// HTTP servers.
+type MockHandler struct {
+	Mu         sync.Mutex
+	Calls      []*url.URL
+	Header     map[string][]string
+	Body       []byte
+	StatusCode int
+
+	writeError error
+}
+
+// NewMockHandler returns a MockHandler object that can be used as an
+// http.Handler.
+func NewMockHandler() *MockHandler { return &MockHandler{} }
+
+// ServerHTTP is a thread-safe handler for mocking HTTP responses. The request
+// URLs are recorded and the customizable header, body, and status code are all
+// written to the http.ResponseWriter. If there is an error when writing to the
+// http.ResponseWriter, a 500 status code is returned to the requester;
+// WriteError (see below) returns the most recent error.
+func (h *MockHandler) ServerHTTP(w http.ResponseWriter, r *http.Request) {
+	h.Mu.Lock()
+	defer h.Mu.Unlock()
+
+	h.Calls = append(h.Calls, r.URL)
+
+	header := w.Header()
+	for key, values := range h.Header {
+		for _, val := range values {
+			header.Add(key, val)
+		}
+	}
+
+	if h.Body != nil {
+		if _, err := w.Write(h.Body); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			h.writeError = err
+			return
+		}
+	}
+
+	if h.StatusCode > 0 {
+		w.WriteHeader(h.StatusCode)
+	}
+}
+
+// WriteError returns the most recent error from writing to the
+// http.ResponseWriter.
+func (h *MockHandler) WriteError() error { return h.writeError }
