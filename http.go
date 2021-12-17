@@ -393,7 +393,7 @@ func NewMockHandler() *MockHandler { return &MockHandler{} }
 // URLs are recorded and the customizable header, body, and status code are all
 // written to the http.ResponseWriter. If there is an error when writing to the
 // http.ResponseWriter, a 500 status code is returned to the requester;
-// WriteError (see below) returns the most recent error.
+// WriteError (see below) returns the most recent write error.
 func (h *MockHandler) ServerHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Mu.Lock()
 	defer h.Mu.Unlock()
