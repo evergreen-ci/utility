@@ -392,7 +392,7 @@ func NewMockHandler() *MockHandler { return &MockHandler{} }
 // ServeHTTP is a thread-safe handler for mocking HTTP responses. The request
 // URLs are recorded and the customizable header, body, and status code are all
 // written to the http.ResponseWriter.
-// WriteError (see below) returns the most recent write error, if any.
+// GetWriteError (see below) returns the most recent write error, if any.
 func (h *MockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Mu.Lock()
 	defer h.Mu.Unlock()
@@ -417,6 +417,6 @@ func (h *MockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// WriteError returns the most recent error from writing to the
+// GetWriteError returns the most recent error from writing to the
 // http.ResponseWriter.
-func (h *MockHandler) WriteError() error { return h.writeError }
+func (h *MockHandler) GetWriteError() error { return h.writeError }
