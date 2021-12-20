@@ -111,7 +111,7 @@ func TestMockHandler(t *testing.T) {
 	client := server.Client()
 
 	t.Run("Serve", func(t *testing.T) {
-		url := server.URL + "/example"
+		urlString := server.URL + "/example"
 		handler.Header = map[string][]string{
 			"header1": []string{"header1"},
 			"header2": []string{"header1", "header2"},
@@ -119,10 +119,12 @@ func TestMockHandler(t *testing.T) {
 		handler.Body = []byte("some body")
 		handler.StatusCode = http.StatusOK
 
-		req, err := http.NewRequest(http.MethodGet, url, nil)
+		req, err := http.NewRequest(http.MethodGet, urlString, nil)
+		require.NoError(t, err)
 		resp, err := client.Do(req)
 		require.NoError(t, err)
 
+		assert.Len(t, handler.Calls, 1)
 		for key, values := range handler.Header {
 			assert.Equal(t, values, resp.Header.Values(key))
 		}
@@ -132,17 +134,19 @@ func TestMockHandler(t *testing.T) {
 		assert.Equal(t, handler.Body, body)
 		assert.NoError(t, handler.WriteError())
 
-		url = server.URL + "/example2"
+		urlString = server.URL + "/example2"
 		handler.Header = map[string][]string{
 			"header1": []string{"header1"},
 		}
 		handler.Body = []byte("example not found")
 		handler.StatusCode = http.StatusNotFound
 
-		req, err = http.NewRequest(http.MethodGet, url, nil)
+		req, err = http.NewRequest(http.MethodGet, urlString, nil)
+		require.NoError(t, err)
 		resp, err = client.Do(req)
 		require.NoError(t, err)
 
+		assert.Len(t, handler.Calls, 2)
 		for key, values := range handler.Header {
 			assert.Equal(t, values, resp.Header.Values(key))
 		}
