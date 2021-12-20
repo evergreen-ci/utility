@@ -132,7 +132,7 @@ func TestMockHandler(t *testing.T) {
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		assert.Equal(t, handler.Body, body)
-		assert.NoError(t, handler.WriteError())
+		assert.NoError(t, handler.GetWriteError())
 
 		urlString = server.URL + "/example2"
 		handler.Header = map[string][]string{
@@ -154,6 +154,6 @@ func TestMockHandler(t *testing.T) {
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		assert.Equal(t, handler.Body, body)
-		assert.NoError(t, handler.WriteError())
+		assert.NoError(t, handler.GetWriteError())
 	})
 }
