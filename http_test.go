@@ -1,8 +1,10 @@
 package utility
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -99,5 +101,59 @@ func TestRetryableOauthClient(t *testing.T) {
 		assert.NotNil(t, resp)
 		assert.Equal(t, 6, transport.count)
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
+
+func TestMockHandler(t *testing.T) {
+	handler := NewMockHandler()
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	client := server.Client()
+
+	t.Run("Serve", func(t *testing.T) {
+		urlString := server.URL + "/example"
+		handler.Header = map[string][]string{
+			"header1": []string{"header1"},
+			"header2": []string{"header1", "header2"},
+		}
+		handler.Body = []byte("some body")
+		handler.StatusCode = http.StatusOK
+
+		req, err := http.NewRequest(http.MethodGet, urlString, nil)
+		require.NoError(t, err)
+		resp, err := client.Do(req)
+		require.NoError(t, err)
+
+		assert.Len(t, handler.Calls, 1)
+		for key, values := range handler.Header {
+			assert.Equal(t, values, resp.Header.Values(key))
+		}
+		assert.Equal(t, handler.StatusCode, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		assert.Equal(t, handler.Body, body)
+		assert.NoError(t, handler.GetWriteError())
+
+		urlString = server.URL + "/example2"
+		handler.Header = map[string][]string{
+			"header1": []string{"header1"},
+		}
+		handler.Body = []byte("example not found")
+		handler.StatusCode = http.StatusNotFound
+
+		req, err = http.NewRequest(http.MethodGet, urlString, nil)
+		require.NoError(t, err)
+		resp, err = client.Do(req)
+		require.NoError(t, err)
+
+		assert.Len(t, handler.Calls, 2)
+		for key, values := range handler.Header {
+			assert.Equal(t, values, resp.Header.Values(key))
+		}
+		assert.Equal(t, handler.StatusCode, resp.StatusCode)
+		body, err = io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		assert.Equal(t, handler.Body, body)
+		assert.NoError(t, handler.GetWriteError())
 	})
 }
