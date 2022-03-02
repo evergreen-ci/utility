@@ -30,7 +30,7 @@ func Retry(ctx context.Context, op RetriableFunc, opts RetryOptions) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return errors.Errorf("context canceled after %d attempts", attempt)
+			return errors.Wrapf(ctx.Err(), "context canceled after %d attempts", attempt)
 		case <-timer.C:
 			shouldRetry, err := op()
 			if err == nil {
