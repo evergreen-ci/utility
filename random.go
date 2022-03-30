@@ -16,6 +16,6 @@ func MakeRandomString(size int) string {
 }
 
 // RandomString returns a hex-encoded cryptographically random string.
-// This function always returns 16bytes of randomness encoded in a 32
+// This function always returns 16 bytes of randomness encoded in a 32
 // character string.
 func RandomString() string { return MakeRandomString(16) }

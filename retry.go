@@ -14,14 +14,14 @@ func init() {
 	rand.Seed(time.Now().Unix())
 }
 
-// RetriableFunc is any function that takes no parameters and returns an error,
+// RetryableFunc is any function that takes no parameters and returns an error,
 // and whether or not the operation can be retried. These functions can be used
 // with util.Retry.
-type RetriableFunc func() (canRetry bool, err error)
+type RetryableFunc func() (canRetry bool, err error)
 
 // Retry provides a mechanism to retry an operation with exponential backoff
 // and jitter.
-func Retry(ctx context.Context, op RetriableFunc, opts RetryOptions) error {
+func Retry(ctx context.Context, op RetryableFunc, opts RetryOptions) error {
 	backoff := getBackoff(opts)
 	timer := time.NewTimer(0)
 	defer timer.Stop()
