@@ -14,17 +14,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require (
-	github.com/StackExchange/wmi v1.2.1 // indirect
-	github.com/andygrunwald/go-jira v1.14.0 // indirect
-	github.com/bluele/slack v0.0.0-20180528010058-b4b4d354a079 // indirect
-	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
-	github.com/gin-gonic/gin v1.5.0 // indirect
-	github.com/google/go-github v17.0.0+incompatible // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/mattn/go-xmpp v0.0.0-20210723025538-3871461df959 // indirect
-	github.com/phyber/negroni-gzip v1.0.0 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/shirou/gopsutil v3.21.9+incompatible // indirect
-	github.com/tklauser/go-sysconf v0.3.9 // indirect
-)
+require github.com/phyber/negroni-gzip v1.0.0 // indirect
