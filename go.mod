@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/PuerkitoBio/rehttp v1.1.0
-	github.com/evergreen-ci/gimlet v0.0.0-20220301164608-c5cc19e1a468
+	github.com/evergreen-ci/gimlet v0.0.0-20220401150826-5898de01dbd8
 	github.com/jpillora/backoff v1.0.0
 	github.com/mongodb/grip v0.0.0-20220330135544-44b579c15425
 	github.com/pkg/errors v0.9.1
