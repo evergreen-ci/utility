@@ -64,19 +64,19 @@ func TestFileListBuilder(t *testing.T) {
 
 	for _, fileName := range fileNames {
 		f, err := os.Create(filepath.Join(tmpDir, fileName))
-		require.NoError(t, err, "error creating test file")
-		require.NoError(t, f.Close(), "error closing test file")
+		require.NoError(t, err, "should have created test file without error")
+		require.NoError(t, f.Close(), "should have closed test file without error")
 		allFiles = append(allFiles, fileName)
 	}
 
 	for _, dirName := range dirNames {
 		err := os.Mkdir(filepath.Join(tmpDir, dirName), 0777)
-		require.NoError(t, err, "error creating test directory")
+		require.NoError(t, err, "should have created test directory without error")
 		for _, fileName := range fileNames {
 			path := filepath.Join(tmpDir, dirName, fileName)
 			f, err := os.Create(path)
-			require.NoError(t, err, "error creating test file")
-			require.NoError(t, f.Close(), "error closing test file")
+			require.NoError(t, err, "should have created test file without error")
+			require.NoError(t, f.Close(), "should have closed test file without error")
 			allFiles = append(allFiles, filepath.Join(dirName, fileName))
 		}
 	}

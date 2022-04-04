@@ -27,7 +27,7 @@ func FileExists(path string) bool {
 func WriteRawFile(path string, data []byte) error {
 	file, err := os.Create(path)
 	if err != nil {
-		return errors.Wrapf(err, "problem creating file '%s'", path)
+		return errors.Wrapf(err, "creating file '%s'", path)
 	}
 
 	n, err := file.Write(data)
@@ -40,11 +40,11 @@ func WriteRawFile(path string, data []byte) error {
 				"input_len":     len(data),
 			}))
 
-		return errors.Wrapf(err, "problem writing data to file '%s'", path)
+		return errors.Wrapf(err, "writing data to file '%s'", path)
 	}
 
 	if err = file.Close(); err != nil {
-		return errors.Wrapf(err, "problem closing file '%s' after successfully writing data", path)
+		return errors.Wrapf(err, "closing file '%s' after successfully writing data", path)
 	}
 
 	return nil

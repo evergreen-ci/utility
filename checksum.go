@@ -20,13 +20,13 @@ func ChecksumFile(hash hash.Hash, path string) (string, error) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		return "", errors.Wrapf(err, "problem opening '%s'", path)
+		return "", errors.Wrapf(err, "opening file '%s'", path)
 	}
 	defer f.Close()
 
 	_, err = io.Copy(hash, f)
 	if err != nil {
-		return "", errors.Wrap(err, "problem hashing contents")
+		return "", errors.Wrap(err, "hashing contents")
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil

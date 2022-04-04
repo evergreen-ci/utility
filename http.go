@@ -306,7 +306,7 @@ func RespErrorf(resp *http.Response, format string, args ...interface{}) error {
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return wrapError(errors.Wrap(err, "could not read response body"))
+		return wrapError(errors.Wrap(err, "reading response body"))
 	}
 
 	respErr := gimlet.ErrorResponse{}

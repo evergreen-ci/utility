@@ -55,7 +55,7 @@ func ReadYAMLFile(path string, target interface{}) error {
 		return errors.Wrapf(err, "invalid file: %s", path)
 	}
 
-	return errors.Wrapf(ReadYAML(file, target), "problem reading yaml from '%s'", path)
+	return errors.Wrapf(ReadYAML(file, target), "reading YAML from '%s'", path)
 }
 
 // ReadYAMLFileStrict is the same as ReadYAMLFile but uses strict unmarshalling.
@@ -69,7 +69,7 @@ func ReadYAMLFileStrict(path string, target interface{}) error {
 		return errors.Wrapf(err, "invalid file: %s", path)
 	}
 
-	return errors.Wrapf(ReadYAMLStrict(file, target), "problem reading yaml from '%s'", path)
+	return errors.Wrapf(ReadYAMLStrict(file, target), "reading YAML from '%s'", path)
 }
 
 // ReadJSONFile parses json into the target argument from the file
@@ -84,7 +84,7 @@ func ReadJSONFile(path string, target interface{}) error {
 		return errors.Wrapf(err, "invalid file: %s", path)
 	}
 
-	return errors.Wrapf(ReadJSON(file, target), "problem reading json from '%s'", path)
+	return errors.Wrapf(ReadJSON(file, target), "reading JSON from '%s'", path)
 }
 
 // PrintJSON marshals the data to a pretty-printed (indented) string
@@ -92,7 +92,7 @@ func ReadJSONFile(path string, target interface{}) error {
 func PrintJSON(data interface{}) error {
 	out, err := json.MarshalIndent(data, "", "   ")
 	if err != nil {
-		return errors.Wrap(err, "problem writing data")
+		return errors.Wrap(err, "writing data")
 	}
 
 	fmt.Println(string(out))
@@ -104,7 +104,7 @@ func PrintJSON(data interface{}) error {
 func WriteJSONFile(fn string, data interface{}) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
-		return errors.Wrap(err, "problem constructing JSON")
+		return errors.Wrap(err, "constructing JSON")
 	}
 
 	return errors.WithStack(WriteRawFile(fn, payload))
@@ -115,7 +115,7 @@ func WriteJSONFile(fn string, data interface{}) error {
 func WriteYAMLFile(fn string, data interface{}) error {
 	payload, err := yaml.Marshal(data)
 	if err != nil {
-		return errors.Wrap(err, "problem constructing YAML")
+		return errors.Wrap(err, "constructing YAML")
 	}
 
 	return errors.WithStack(WriteRawFile(fn, payload))
