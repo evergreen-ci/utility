@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -84,7 +85,7 @@ func SplitCommas(originals []string) []string {
 	return splitted
 }
 
-// GetSetDifference returns the elements in A that are not in B
+// GetSetDifference returns the elements in A that are not in B.
 func GetSetDifference(a, b []string) []string {
 	setB := make(map[string]struct{})
 	setDifference := make(map[string]struct{})
@@ -118,4 +119,16 @@ func IndexOf(a []string, toFind string) int {
 		return i
 	}
 	return -1
+}
+
+// StringMatchesAnyRegex determines if the string item matches any regex in
+// the slice.
+func StringMatchesAnyRegex(item string, regexps []string) bool {
+	for _, re := range regexps {
+		matched, err := regexp.MatchString(re, item)
+		if err == nil && matched {
+			return true
+		}
+	}
+	return false
 }

@@ -94,3 +94,11 @@ func TestIndexOf(t *testing.T) {
 	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "1"))
 	assert.Equal(t, -1, IndexOf([]string{"a", "b", "c", "d", "e"}, "æ"))
 }
+
+func TestStringMatchesAnyRegex(t *testing.T) {
+	domains := []string{".*.corp.mongodb.com", "https://something.mongodb.com"}
+	assert.Equal(t, true, StringMatchesAnyRegex("https://patch-analysis-ui.server-tig.staging.corp.mongodb.com", domains))
+	assert.Equal(t, true, StringMatchesAnyRegex("https://something.mongodb.com", domains))
+	assert.Equal(t, false, StringMatchesAnyRegex("corp.mongodb.com", domains))
+	assert.Equal(t, false, StringMatchesAnyRegex("https://something-else.mongodb.com", domains))
+}
