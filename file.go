@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mongodb/grip"
-	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
 )
 
@@ -30,16 +28,8 @@ func WriteRawFile(path string, data []byte) error {
 		return errors.Wrapf(err, "creating file '%s'", path)
 	}
 
-	n, err := file.Write(data)
+	_, err = file.Write(data)
 	if err != nil {
-		grip.Warning(message.WrapError(errors.WithStack(file.Close()),
-			message.Fields{
-				"message":       "problem closing file after error",
-				"path":          path,
-				"bytes_written": n,
-				"input_len":     len(data),
-			}))
-
 		return errors.Wrapf(err, "writing data to file '%s'", path)
 	}
 

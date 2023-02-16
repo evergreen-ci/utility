@@ -13,8 +13,6 @@ import (
 
 	"github.com/PuerkitoBio/rehttp"
 	"github.com/evergreen-ci/gimlet"
-	"github.com/mongodb/grip"
-	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
@@ -321,7 +319,6 @@ func RespErrorf(resp *http.Response, format string, args ...interface{}) error {
 // hits a max number of retries, or times out
 func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*http.Response, error) {
 	r = r.WithContext(ctx)
-	b := getBackoff(opts)
 
 	client := GetDefaultHTTPRetryableClient()
 	defer PutHTTPClient(client)
@@ -337,12 +334,6 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*htt
 
 		resp, err = client.Do(r)
 		if err != nil {
-			grip.Warning(message.WrapError(err, message.Fields{
-				"message":   "error response from server",
-				"attempt":   attempt,
-				"max":       opts.MaxAttempts,
-				"wait_secs": b.ForAttempt(float64(attempt)).Seconds(),
-			}))
 			return true, err
 		}
 
