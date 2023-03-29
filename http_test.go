@@ -31,7 +31,7 @@ func TestPooledHTTPClient(t *testing.T) {
 		assert.False(t, cl2.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
 	})
 	t.Run("RehttpPool", func(t *testing.T) {
-		initHTTPPool()
+		InitHTTPPool(NewBaseConfiguredHttpClient)
 		cl := GetHTTPClient()
 		clt := cl.Transport
 		PutHTTPClient(cl)
