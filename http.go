@@ -14,28 +14,28 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const httpClientTimeout = 5 * time.Minute
+const HttpClientTimeout = 5 * time.Minute
 
 var httpClientPool *sync.Pool
 
 func init() {
-	initHTTPPool()
+	InitHTTPPool(newBaseConfiguredHttpClient)
 }
 
-func initHTTPPool() {
+func InitHTTPPool(clientFactory func() *http.Client) {
 	httpClientPool = &sync.Pool{
-		New: func() interface{} { return newBaseConfiguredHttpClient() },
+		New: func() interface{} { return clientFactory() },
 	}
 }
 
 func newBaseConfiguredHttpClient() *http.Client {
 	return &http.Client{
-		Timeout:   httpClientTimeout,
-		Transport: newConfiguredBaseTransport(),
+		Timeout:   HttpClientTimeout,
+		Transport: NewConfiguredBaseTransport(),
 	}
 }
 
-func newConfiguredBaseTransport() *http.Transport {
+func NewConfiguredBaseTransport() *http.Transport {
 	return &http.Transport{
 		TLSClientConfig:     &tls.Config{},
 		Proxy:               http.ProxyFromEnvironment,
@@ -71,7 +71,7 @@ func GetHTTPClient() *http.Client { return httpClientPool.Get().(*http.Client) }
 // PutHTTPClient returns the client to the pool, automatically
 // reconfiguring the transport.
 func PutHTTPClient(c *http.Client) {
-	c.Timeout = httpClientTimeout
+	c.Timeout = HttpClientTimeout
 
 	switch transport := c.Transport.(type) {
 	case *http.Transport:
@@ -86,7 +86,7 @@ func PutHTTPClient(c *http.Client) {
 		PutHTTPClient(c)
 		return
 	default:
-		c.Transport = newConfiguredBaseTransport()
+		c.Transport = NewConfiguredBaseTransport()
 	}
 
 	httpClientPool.Put(c)
