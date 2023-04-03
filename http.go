@@ -19,16 +19,16 @@ const httpClientTimeout = 5 * time.Minute
 var httpClientPool *sync.Pool
 
 func init() {
-	InitHTTPPool(NewBaseConfiguredHttpClient)
+	initHTTPPool()
 }
 
-func InitHTTPPool(clientFactory func() *http.Client) {
+func initHTTPPool() {
 	httpClientPool = &sync.Pool{
-		New: func() interface{} { return clientFactory() },
+		New: func() interface{} { return newBaseConfiguredHttpClient() },
 	}
 }
 
-func NewBaseConfiguredHttpClient() *http.Client {
+func newBaseConfiguredHttpClient() *http.Client {
 	return &http.Client{
 		Timeout:   httpClientTimeout,
 		Transport: newConfiguredBaseTransport(),
