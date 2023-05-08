@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/rehttp"
-	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 )
@@ -235,9 +234,9 @@ func GetCustomHTTPRetryableClient(retry HTTPRetryFunction, delay HTTPDelayFuncti
 // GetCustomHTTPRetryableClientWithTransport allows you to generate an HTTP client
 // that automatically retries failed request based on the provided
 // custom logic and takes in a github transport.
-func GetCustomHTTPRetryableClientWithGithubTransport(itr *ghinstallation.Transport, retry HTTPRetryFunction, delay HTTPDelayFunction) *http.Client {
+func GetCustomHTTPRetryableClientWithGithubTransport(rt http.RoundTripper, retry HTTPRetryFunction, delay HTTPDelayFunction) *http.Client {
 	client := GetHTTPClient()
-	client.Transport = rehttp.NewTransport(itr, makeRetryFn(retry), makeDelayFn(delay))
+	client.Transport = rehttp.NewTransport(rt, makeRetryFn(retry), makeDelayFn(delay))
 	return client
 }
 
