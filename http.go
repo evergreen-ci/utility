@@ -231,6 +231,15 @@ func GetCustomHTTPRetryableClient(retry HTTPRetryFunction, delay HTTPDelayFuncti
 	return client
 }
 
+// GetCustomHTTPRetryableClientWithTransport allows you to generate an HTTP client
+// that automatically retries failed request based on the provided
+// custom logic and HTTP transport.
+func GetCustomHTTPRetryableClientWithTransport(rt http.RoundTripper, retry HTTPRetryFunction, delay HTTPDelayFunction) *http.Client {
+	client := GetHTTPClient()
+	client.Transport = rehttp.NewTransport(rt, makeRetryFn(retry), makeDelayFn(delay))
+	return client
+}
+
 // GetOAuth2HTTPClient produces an HTTP client that will supply OAuth2
 // credentials with all requests. There is no validation of the
 // token, and you should always call PutHTTPClient to return the
