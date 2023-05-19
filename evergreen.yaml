@@ -83,21 +83,21 @@ tasks:
 #######################################
 buildvariants:
   - name: lint
-    display_name: Lint (Arch Linux)
+    display_name: Lint
     expansions:
-      GOROOT: /opt/golang/go1.16
+      GOROOT: /opt/golang/go1.20
     run_on:
-      - archlinux-new-small
-      - archlinux-new-large
+      - ubuntu2204-small
+      - ubuntu2204-large
     tasks: 
       - name: ".report"
 
   - name: ubuntu
-    display_name: Ubuntu 18.04
+    display_name: Ubuntu 22.04
     expansions:
-      GOROOT: /opt/golang/go1.16
+      GOROOT: /opt/golang/go1.20
     run_on:
-      - ubuntu1804-small
-      - ubuntu1804-large
+      - ubuntu2204-small
+      - ubuntu2204-large
     tasks:
       - name: ".test"
