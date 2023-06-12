@@ -53,16 +53,6 @@ func newConfiguredBaseTransport() *http.Transport {
 
 }
 
-func setupOauth2HTTPClient(token string, client *http.Client) *http.Client {
-	client.Transport = &oauth2.Transport{
-		Base: client.Transport,
-		Source: oauth2.ReuseTokenSource(nil, oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: token},
-		)),
-	}
-	return client
-}
-
 // GetHTTPClient produces default HTTP client from the pool,
 // constructing a new client if needed. Always pair calls to
 // GetHTTPClient with defered calls to PutHTTPClient.
@@ -138,7 +128,7 @@ func NewDefaultHTTPRetryConf() HTTPRetryConfiguration {
 
 // GetHTTPRetryableClient produces an HTTP client that automatically
 // retries failed requests according to the configured
-// parameters. Couple calls to GetHTTPRetryableClient, with defered
+// parameters. Couple calls to GetHTTPRetryableClient with deferred
 // calls to PutHTTPClient.
 func GetHTTPRetryableClient(conf HTTPRetryConfiguration) *http.Client {
 	client := GetHTTPClient()
@@ -222,13 +212,17 @@ func makeDelayFn(in HTTPDelayFunction) rehttp.DelayFn {
 	}
 }
 
+func setupCustomHTTPRetryableClient(retry HTTPRetryFunction, delay HTTPDelayFunction, client *http.Client) *http.Client {
+	client.Transport = rehttp.NewTransport(client.Transport, makeRetryFn(retry), makeDelayFn(delay))
+	return client
+}
+
 // GetCustomHTTPRetryableClient allows you to generate an HTTP client
 // that automatically retries failed request based on the provided
 // custom logic.
 func GetCustomHTTPRetryableClient(retry HTTPRetryFunction, delay HTTPDelayFunction) *http.Client {
 	client := GetHTTPClient()
-	client.Transport = rehttp.NewTransport(client.Transport, makeRetryFn(retry), makeDelayFn(delay))
-	return client
+	return setupCustomHTTPRetryableClient(retry, delay, client)
 }
 
 // GetCustomHTTPRetryableClientWithTransport allows you to generate an HTTP client
@@ -245,7 +239,7 @@ func GetCustomHTTPRetryableClientWithTransport(rt http.RoundTripper, retry HTTPR
 // token, and you should always call PutHTTPClient to return the
 // client to the pool when you're done with it.
 func GetOAuth2HTTPClient(oauthToken string) *http.Client {
-	return setupOauth2HTTPClient(oauthToken, GetHTTPClient())
+	return SetupOauth2HTTPClient(oauthToken, GetHTTPClient())
 }
 
 // GetOauth2DefaultHTTPRetryableClient constructs an HTTP client that
@@ -255,7 +249,7 @@ func GetOAuth2HTTPClient(oauthToken string) *http.Client {
 // call PutHTTPClient to return the client to the pool when you're
 // done with it.
 func GetOauth2DefaultHTTPRetryableClient(oauthToken string) *http.Client {
-	return setupOauth2HTTPClient(oauthToken, GetDefaultHTTPRetryableClient())
+	return SetupOauth2HTTPClient(oauthToken, GetDefaultHTTPRetryableClient())
 }
 
 // GetOauth2HTTPRetryableClient constructs an HTTP client that
@@ -265,17 +259,41 @@ func GetOauth2DefaultHTTPRetryableClient(oauthToken string) *http.Client {
 // always call PutHTTPClient to return the client to the pool when
 // you're done with it.
 func GetOauth2HTTPRetryableClient(oauthToken string, conf HTTPRetryConfiguration) *http.Client {
-	return setupOauth2HTTPClient(oauthToken, GetHTTPRetryableClient(conf))
+	return SetupOauth2HTTPClient(oauthToken, GetHTTPRetryableClient(conf))
 }
 
-// GetOauth2HTTPRetryableClient constructs an HTTP client that
+// GetOauth2CustomHTTPRetryableClient constructs an HTTP client that
 // supplies OAuth2 credentials with all requests, retrying failed
 // requests automatically according to definitions of the provided
 // functions. There is no validation of the token, and you should
 // always call PutHTTPClient to return the client to the pool when
 // you're done with it.
 func GetOauth2CustomHTTPRetryableClient(token string, retry HTTPRetryFunction, delay HTTPDelayFunction) *http.Client {
-	return setupOauth2HTTPClient(token, GetCustomHTTPRetryableClient(retry, delay))
+	return SetupOauth2HTTPClient(token, GetCustomHTTPRetryableClient(retry, delay))
+}
+
+// SetupOauth2HTTPClient configures an HTTP client that
+// supplies OAuth2 credentials with all requests. There is no validation
+// of the token, and you should always call PutHTTPClient to return the
+// client to the pool when you're done with it.
+func SetupOauth2HTTPClient(token string, client *http.Client) *http.Client {
+	client.Transport = &oauth2.Transport{
+		Base: client.Transport,
+		Source: oauth2.ReuseTokenSource(nil, oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)),
+	}
+	return client
+}
+
+// SetupOauth2CustomHTTPRetryableClient configures an HTTP client that
+// supplies OAuth2 credentials with all requests, retrying failed
+// requests automatically according to definitions of the provided
+// functions. There is no validation of the token, and you should
+// always call PutHTTPClient to return the client to the pool when
+// you're done with it.
+func SetupOauth2CustomHTTPRetryableClient(token string, retry HTTPRetryFunction, delay HTTPDelayFunction, client *http.Client) *http.Client {
+	return SetupOauth2HTTPClient(token, setupCustomHTTPRetryableClient(retry, delay, client))
 }
 
 // TemporayError defines an interface for use in retryable HTTP
