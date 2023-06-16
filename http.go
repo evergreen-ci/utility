@@ -29,13 +29,17 @@ func initHTTPPool() {
 }
 
 func newBaseConfiguredHttpClient() *http.Client {
+	return DefaultHttpClient(DefaultTransport())
+}
+
+func DefaultHttpClient(rt http.RoundTripper) *http.Client {
 	return &http.Client{
 		Timeout:   httpClientTimeout,
-		Transport: newConfiguredBaseTransport(),
+		Transport: rt,
 	}
 }
 
-func newConfiguredBaseTransport() *http.Transport {
+func DefaultTransport() *http.Transport {
 	return &http.Transport{
 		TLSClientConfig:     &tls.Config{},
 		Proxy:               http.ProxyFromEnvironment,
@@ -76,7 +80,7 @@ func PutHTTPClient(c *http.Client) {
 		PutHTTPClient(c)
 		return
 	default:
-		c.Transport = newConfiguredBaseTransport()
+		c.Transport = DefaultTransport()
 	}
 
 	httpClientPool.Put(c)
