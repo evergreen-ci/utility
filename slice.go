@@ -132,3 +132,14 @@ func StringMatchesAnyRegex(item string, regexps []string) bool {
 	}
 	return false
 }
+
+// FilterSlice filters a slice of elements based on a filter function
+func FilterSlice[T any](slice []T, filterFunction func(T) bool) []T {
+	var filteredSlice []T
+	for _, item := range slice {
+		if filterFunction(item) {
+			filteredSlice = append(filteredSlice, item)
+		}
+	}
+	return filteredSlice
+}

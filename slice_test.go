@@ -102,3 +102,34 @@ func TestStringMatchesAnyRegex(t *testing.T) {
 	assert.Equal(t, false, StringMatchesAnyRegex("corp.mongodb.com", domains))
 	assert.Equal(t, false, StringMatchesAnyRegex("https://something-else.mongodb.com", domains))
 }
+
+func TestFilterSlice(t *testing.T) {
+	stringTest := []string{"a", "b", "c", "d", "e"}
+	assert.Equal(t, []string{"a", "b", "c"}, FilterSlice(stringTest, func(s string) bool {
+		return s < "d"
+	}))
+
+	intTest := []int{1, 2, 3, 4, 5}
+	assert.Equal(t, []int{1, 2, 3}, FilterSlice(intTest, func(i int) bool {
+		return i < 4
+	}))
+
+	type SomeCustomType struct {
+		name string
+		age  int
+	}
+
+	customTypeTest := []SomeCustomType{
+		{"Alice", 23},
+		{"Bob", 25},
+		{"Charlie", 27},
+	}
+
+	assert.Equal(t, []SomeCustomType{
+		{"Alice", 23},
+		{"Bob", 25},
+	}, FilterSlice(customTypeTest, func(c SomeCustomType) bool {
+		return c.age < 27
+	}))
+
+}
