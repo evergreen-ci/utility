@@ -133,7 +133,7 @@ func TestFilterSlice(t *testing.T) {
 	}))
 }
 
-func TestIsSubsetSlice(t *testing.T) {
+func TestHasSubsetSlice(t *testing.T) {
 	supersetString := []string{"a", "b", "c", "b", "z"}
 	assert.True(t, HasOrderedSubset(supersetString, []string{"a", "b", "c"}))
 	assert.True(t, HasOrderedSubset(supersetString, []string{"b", "z"}))
