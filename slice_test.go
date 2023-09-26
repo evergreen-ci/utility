@@ -135,30 +135,30 @@ func TestFilterSlice(t *testing.T) {
 
 func TestIsSubsetSlice(t *testing.T) {
 	supersetString := []string{"a", "b", "c", "b", "z"}
-	assert.True(t, IsInOrderSubset([]string{"a", "b", "c"}, supersetString))
-	assert.True(t, IsInOrderSubset([]string{"b", "z"}, supersetString))
-	assert.True(t, IsInOrderSubset([]string{"a", "b", "b"}, supersetString))
-	assert.True(t, IsInOrderSubset([]string{"a", "c", "b"}, supersetString))
-	assert.False(t, IsInOrderSubset([]string{"b", "b", "c"}, supersetString))
-	assert.False(t, IsInOrderSubset([]string{"a", "c", "b", "b"}, supersetString))
-	assert.False(t, IsInOrderSubset([]string{"b", "z", "b"}, supersetString))
-	assert.False(t, IsInOrderSubset([]string{"c", "b", "a"}, supersetString))
+	assert.True(t, HasOrderedSubset(supersetString, []string{"a", "b", "c"}))
+	assert.True(t, HasOrderedSubset(supersetString, []string{"b", "z"}))
+	assert.True(t, HasOrderedSubset(supersetString, []string{"a", "b", "b"}))
+	assert.True(t, HasOrderedSubset(supersetString, []string{"a", "c", "b"}))
+	assert.False(t, HasOrderedSubset(supersetString, []string{"b", "b", "c"}))
+	assert.False(t, HasOrderedSubset(supersetString, []string{"a", "c", "b", "b"}))
+	assert.False(t, HasOrderedSubset(supersetString, []string{"b", "z", "b"}))
+	assert.False(t, HasOrderedSubset(supersetString, []string{"c", "b", "a"}))
 
 	supersetInt := []int{0, 1, 2, 1, 5}
-	assert.True(t, IsInOrderSubset([]int{0, 1, 2}, supersetInt))
-	assert.True(t, IsInOrderSubset([]int{1, 1, 5}, supersetInt))
-	assert.True(t, IsInOrderSubset([]int{0, 2, 1, 5}, supersetInt))
-	assert.True(t, IsInOrderSubset([]int{1, 2, 5}, supersetInt))
-	assert.False(t, IsInOrderSubset([]int{0, 1, 1, 2}, supersetInt))
-	assert.False(t, IsInOrderSubset([]int{0, 2, 1, 1}, supersetInt))
-	assert.False(t, IsInOrderSubset([]int{1, 5, 1}, supersetInt))
-	assert.False(t, IsInOrderSubset([]int{2, 1, 0}, supersetInt))
+	assert.True(t, HasOrderedSubset(supersetInt, []int{0, 1, 2}))
+	assert.True(t, HasOrderedSubset(supersetInt, []int{1, 1, 5}))
+	assert.True(t, HasOrderedSubset(supersetInt, []int{0, 2, 1, 5}))
+	assert.True(t, HasOrderedSubset(supersetInt, []int{1, 2, 5}))
+	assert.False(t, HasOrderedSubset(supersetInt, []int{0, 1, 1, 2}))
+	assert.False(t, HasOrderedSubset(supersetInt, []int{0, 2, 1, 1}))
+	assert.False(t, HasOrderedSubset(supersetInt, []int{1, 5, 1}))
+	assert.False(t, HasOrderedSubset(supersetInt, []int{2, 1, 0}))
 
 	// Larger subset than superset
-	assert.False(t, IsInOrderSubset([]int{0, 1, 2, 3}, []int{0, 1, 2}))
+	assert.False(t, HasOrderedSubset([]int{0, 1, 2}, []int{0, 1, 2, 3}))
 
 	// Empty slices
-	assert.True(t, IsInOrderSubset([]int{}, []int{0, 1}))
-	assert.False(t, IsInOrderSubset([]int{0, 1}, []int{}))
-	assert.True(t, IsInOrderSubset([]int{}, []int{}))
+	assert.True(t, HasOrderedSubset([]int{0, 1}, []int{}))
+	assert.False(t, HasOrderedSubset([]int{}, []int{0, 1}))
+	assert.True(t, HasOrderedSubset([]int{}, []int{}))
 }
