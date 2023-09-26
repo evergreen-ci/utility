@@ -144,14 +144,23 @@ func FilterSlice[T any](slice []T, filterFunction func(T) bool) []T {
 	return filteredSlice
 }
 
-// HasOrderedSubset compares two slices, a subset and a superset, and checks
-// if the subset in the same order and is fullly contained in the superset.
-func HasOrderedSubset[T comparable](superset, subset []T) bool {
+// HasOrderedSubsetComparator compares two slices, a subset and a superset,
+// and compares them based on the compare function given, to test if
+// the subset is in order and is fully contained by the superset.
+func HasOrderedSubsetComparator[T any](superset, subset []T, compare func(T, T) bool) bool {
 	subI := 0
 	for i := 0; i < len(superset) && subI < len(subset); i++ {
-		if subset[subI] == superset[i] {
+		if compare(superset[i], subset[subI]) {
 			subI++
 		}
 	}
 	return len(subset) == subI
+}
+
+// HasOrderedSubset compares two slices, a subset and a superset, and checks
+// if the subset in order and is fully contained in the superset.
+func HasOrderedSubset[T comparable](superset, subset []T) bool {
+	return HasOrderedSubsetComparator(superset, subset, func(a, b T) bool {
+		return a == b
+	})
 }
