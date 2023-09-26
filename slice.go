@@ -143,3 +143,14 @@ func FilterSlice[T any](slice []T, filterFunction func(T) bool) []T {
 	}
 	return filteredSlice
 }
+
+func IsSubsetSlice[T comparable](subset []T, superset []T) bool {
+	subI := 0
+	for i := 0; i < len(superset); i++ {
+		if subset[subI] == superset[i] {
+			subI++
+		}
+	}
+	return len(subset) == subI
+
+}
