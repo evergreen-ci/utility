@@ -164,3 +164,11 @@ func HasOrderedSubset[T comparable](superset, subset []T) bool {
 		return a == b
 	})
 }
+
+// HasOrderedSubset compares two slices, a subset and a superset, and checks
+// if the subset in order and is fully contained in the superset.
+func HasStringsWithPrefixesInOrder(superset, subset []string) bool {
+	return HasOrderedSubsetComparator(superset, subset, func(a, b string) bool {
+		return strings.HasPrefix(a, b)
+	})
+}

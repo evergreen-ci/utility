@@ -2,7 +2,6 @@ package utility
 
 import (
 	"sort"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -135,18 +134,6 @@ func TestFilterSlice(t *testing.T) {
 }
 
 func TestHasOrderedSubsetComparator(t *testing.T) {
-	supersetStrings := []string{"apples", "bananas", "cabbages", "balloons", "applets"}
-	prefixComparator := func(super, sub string) bool {
-		return strings.HasPrefix(super, sub)
-	}
-	assert.True(t, HasOrderedSubsetComparator(supersetStrings, []string{"a", "b", "c"}, prefixComparator))
-	assert.True(t, HasOrderedSubsetComparator(supersetStrings, []string{"app", "ballo", "appl"}, prefixComparator))
-	assert.True(t, HasOrderedSubsetComparator(supersetStrings, []string{"app", "banan", "ball", "appl"}, prefixComparator))
-	assert.True(t, HasOrderedSubsetComparator(supersetStrings, []string{"app", "banan", "ball", "appl"}, prefixComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetStrings, []string{"apple", "ballo", "cab"}, prefixComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetStrings, []string{"ba", "ba", "cab"}, prefixComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetStrings, []string{"a", "cab", "ba", "cab"}, prefixComparator))
-
 	supersetInt := []int{0, 1, 2, 1, 5}
 	lessThanComparator := func(super, sub int) bool {
 		return sub < super
@@ -195,4 +182,15 @@ func TestHasOrderedSubset(t *testing.T) {
 	assert.True(t, HasOrderedSubset([]int{0, 1}, []int{}))
 	assert.False(t, HasOrderedSubset([]int{}, []int{0, 1}))
 	assert.True(t, HasOrderedSubset([]int{}, []int{}))
+}
+
+func TestHasStringsWithPrefixesInOrder(t *testing.T) {
+	supersetStrings := []string{"apples", "bananas", "cabbages", "balloons", "applets"}
+	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"a", "b", "c"}))
+	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "ballo", "appl"}))
+	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "banan", "ball", "appl"}))
+	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "banan", "ball", "appl"}))
+	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"apple", "ballo", "cab"}))
+	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"ba", "ba", "cab"}))
+	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"a", "cab", "ba", "cab"}))
 }
