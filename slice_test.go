@@ -131,5 +131,34 @@ func TestFilterSlice(t *testing.T) {
 	}, FilterSlice(customTypeTest, func(c SomeCustomType) bool {
 		return c.age < 27
 	}))
+}
 
+func TestIsSubsetSlice(t *testing.T) {
+	supersetString := []string{"a", "b", "c", "b", "z"}
+	assert.True(t, IsInOrderSubset([]string{"a", "b", "c"}, supersetString))
+	assert.True(t, IsInOrderSubset([]string{"b", "z"}, supersetString))
+	assert.True(t, IsInOrderSubset([]string{"a", "b", "b"}, supersetString))
+	assert.True(t, IsInOrderSubset([]string{"a", "c", "b"}, supersetString))
+	assert.False(t, IsInOrderSubset([]string{"b", "b", "c"}, supersetString))
+	assert.False(t, IsInOrderSubset([]string{"a", "c", "b", "b"}, supersetString))
+	assert.False(t, IsInOrderSubset([]string{"b", "z", "b"}, supersetString))
+	assert.False(t, IsInOrderSubset([]string{"c", "b", "a"}, supersetString))
+
+	supersetInt := []int{0, 1, 2, 1, 5}
+	assert.True(t, IsInOrderSubset([]int{0, 1, 2}, supersetInt))
+	assert.True(t, IsInOrderSubset([]int{1, 1, 5}, supersetInt))
+	assert.True(t, IsInOrderSubset([]int{0, 2, 1, 5}, supersetInt))
+	assert.True(t, IsInOrderSubset([]int{1, 2, 5}, supersetInt))
+	assert.False(t, IsInOrderSubset([]int{0, 1, 1, 2}, supersetInt))
+	assert.False(t, IsInOrderSubset([]int{0, 2, 1, 1}, supersetInt))
+	assert.False(t, IsInOrderSubset([]int{1, 5, 1}, supersetInt))
+	assert.False(t, IsInOrderSubset([]int{2, 1, 0}, supersetInt))
+
+	// Larger subset than superset
+	assert.False(t, IsInOrderSubset([]int{0, 1, 2, 3}, []int{0, 1, 2}))
+
+	// Empty slices
+	assert.True(t, IsInOrderSubset([]int{}, []int{0, 1}))
+	assert.False(t, IsInOrderSubset([]int{0, 1}, []int{}))
+	assert.True(t, IsInOrderSubset([]int{}, []int{}))
 }
