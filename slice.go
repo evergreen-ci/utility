@@ -149,8 +149,10 @@ func IsSubsetSlice[T comparable](subset []T, superset []T) bool {
 	for i := 0; i < len(superset); i++ {
 		if subset[subI] == superset[i] {
 			subI++
+			if len(subset) == subI {
+				return true
+			}
 		}
 	}
-	return len(subset) == subI
-
+	return false
 }
