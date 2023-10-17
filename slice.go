@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// StringSliceContains determines if a string is in a slice
+// StringSliceContains determines if a string is in a slice.
 func StringSliceContains(slice []string, item string) bool {
 	if len(slice) == 0 {
 		return false
@@ -37,7 +37,7 @@ func StringSliceIntersection(a, b []string) []string {
 }
 
 // StringSliceSymmetricDifference returns only elements not in common between 2 slices
-// (ie. inverse of the intersection)
+// (ie. inverse of the intersection).
 func StringSliceSymmetricDifference(a, b []string) ([]string, []string) {
 	mapA := map[string]bool{}
 	mapAcopy := map[string]bool{}
@@ -107,7 +107,7 @@ func GetSetDifference(a, b []string) []string {
 	return d
 }
 
-// IndexOf returns the first occurrence of a string in a sorted array
+// IndexOf returns the first occurrence of a string in a sorted array.
 func IndexOf(a []string, toFind string) int {
 	i := sort.Search(len(a), func(index int) bool {
 		return strings.Compare(a[index], toFind) >= 0
@@ -133,7 +133,7 @@ func StringMatchesAnyRegex(item string, regexps []string) bool {
 	return false
 }
 
-// FilterSlice filters a slice of elements based on a filter function
+// FilterSlice filters a slice of elements based on a filter function.
 func FilterSlice[T any](slice []T, filterFunction func(T) bool) []T {
 	var filteredSlice []T
 	for _, item := range slice {
@@ -142,4 +142,38 @@ func FilterSlice[T any](slice []T, filterFunction func(T) bool) []T {
 		}
 	}
 	return filteredSlice
+}
+
+// ContainsOrderedSubsetWithComparator returns whether a slice
+// contains an ordered subset using the given compare function.
+func ContainsOrderedSubsetWithComparator[T any](superset, subset []T, compare func(T, T) bool) bool {
+	if len(superset) < len(subset) {
+		return false
+	}
+
+	var j int
+	for i := 0; i < len(superset) && j < len(subset); i++ {
+		if compare(superset[i], subset[j]) {
+			j++
+		}
+	}
+
+	return len(subset) == j
+}
+
+// ContainsOrderedSubset returns whether a slice
+// contains an ordered subset using the equality
+// operator.
+func ContainsOrderedSubset[T comparable](superset, subset []T) bool {
+	return ContainsOrderedSubsetWithComparator(superset, subset, func(a, b T) bool {
+		return a == b
+	})
+}
+
+// StringSliceContainsOrderedPrefixSubset returns whether a slice
+// contains an ordered subset of prefixes using strings.HasPrefix.
+func StringSliceContainsOrderedPrefixSubset(superset, subset []string) bool {
+	return ContainsOrderedSubsetWithComparator(superset, subset, func(a, b string) bool {
+		return strings.HasPrefix(a, b)
+	})
 }
