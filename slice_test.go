@@ -133,64 +133,64 @@ func TestFilterSlice(t *testing.T) {
 	}))
 }
 
-func TestHasOrderedSubsetComparator(t *testing.T) {
+func TestContainsOrderedSubsetWithComparator(t *testing.T) {
 	supersetInt := []int{0, 1, 2, 1, 5}
 	lessThanComparator := func(super, sub int) bool {
 		return sub < super
 	}
-	assert.True(t, HasOrderedSubsetComparator(supersetInt, []int{0, 1, 2}, lessThanComparator))
-	assert.True(t, HasOrderedSubsetComparator(supersetInt, []int{-1, 0, 1, 0, 4}, lessThanComparator))
-	assert.True(t, HasOrderedSubsetComparator(supersetInt, []int{-1, 0, 2}, lessThanComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetInt, []int{2, 0}, lessThanComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetInt, []int{1, 0, 0, 4}, lessThanComparator))
-	assert.False(t, HasOrderedSubsetComparator(supersetInt, []int{-1, 1, 5}, lessThanComparator))
+	assert.True(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{0, 1, 2}, lessThanComparator))
+	assert.True(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{-1, 0, 1, 0, 4}, lessThanComparator))
+	assert.True(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{-1, 0, 2}, lessThanComparator))
+	assert.False(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{2, 0}, lessThanComparator))
+	assert.False(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{1, 0, 0, 4}, lessThanComparator))
+	assert.False(t, ContainsOrderedSubsetWithComparator(supersetInt, []int{-1, 1, 5}, lessThanComparator))
 
 	// Larger subset than superset
-	assert.False(t, HasOrderedSubsetComparator([]int{0, 1, 2}, []int{-1, 0, 1, 1}, lessThanComparator))
+	assert.False(t, ContainsOrderedSubsetWithComparator([]int{0, 1, 2}, []int{-1, 0, 1, 1}, lessThanComparator))
 
 	// Empty slices
-	assert.True(t, HasOrderedSubsetComparator([]int{0, 1}, []int{}, lessThanComparator))
-	assert.False(t, HasOrderedSubsetComparator([]int{}, []int{0, 1}, lessThanComparator))
-	assert.True(t, HasOrderedSubsetComparator([]int{}, []int{}, lessThanComparator))
+	assert.True(t, ContainsOrderedSubsetWithComparator([]int{0, 1}, []int{}, lessThanComparator))
+	assert.False(t, ContainsOrderedSubsetWithComparator([]int{}, []int{0, 1}, lessThanComparator))
+	assert.True(t, ContainsOrderedSubsetWithComparator([]int{}, []int{}, lessThanComparator))
 }
 
-func TestHasOrderedSubset(t *testing.T) {
+func TestContainsOrderedSubset(t *testing.T) {
 	supersetStrings := []string{"a", "b", "c", "b", "z"}
-	assert.True(t, HasOrderedSubset(supersetStrings, []string{"a", "b", "c"}))
-	assert.True(t, HasOrderedSubset(supersetStrings, []string{"b", "z"}))
-	assert.True(t, HasOrderedSubset(supersetStrings, []string{"a", "b", "b"}))
-	assert.True(t, HasOrderedSubset(supersetStrings, []string{"a", "c", "b"}))
-	assert.False(t, HasOrderedSubset(supersetStrings, []string{"b", "b", "c"}))
-	assert.False(t, HasOrderedSubset(supersetStrings, []string{"a", "c", "b", "b"}))
-	assert.False(t, HasOrderedSubset(supersetStrings, []string{"b", "z", "b"}))
-	assert.False(t, HasOrderedSubset(supersetStrings, []string{"c", "b", "a"}))
+	assert.True(t, ContainsOrderedSubset(supersetStrings, []string{"a", "b", "c"}))
+	assert.True(t, ContainsOrderedSubset(supersetStrings, []string{"b", "z"}))
+	assert.True(t, ContainsOrderedSubset(supersetStrings, []string{"a", "b", "b"}))
+	assert.True(t, ContainsOrderedSubset(supersetStrings, []string{"a", "c", "b"}))
+	assert.False(t, ContainsOrderedSubset(supersetStrings, []string{"b", "b", "c"}))
+	assert.False(t, ContainsOrderedSubset(supersetStrings, []string{"a", "c", "b", "b"}))
+	assert.False(t, ContainsOrderedSubset(supersetStrings, []string{"b", "z", "b"}))
+	assert.False(t, ContainsOrderedSubset(supersetStrings, []string{"c", "b", "a"}))
 
 	supersetInts := []int{0, 1, 2, 1, 5}
-	assert.True(t, HasOrderedSubset(supersetInts, []int{0, 1, 2}))
-	assert.True(t, HasOrderedSubset(supersetInts, []int{1, 1, 5}))
-	assert.True(t, HasOrderedSubset(supersetInts, []int{0, 2, 1, 5}))
-	assert.True(t, HasOrderedSubset(supersetInts, []int{1, 2, 5}))
-	assert.False(t, HasOrderedSubset(supersetInts, []int{0, 1, 1, 2}))
-	assert.False(t, HasOrderedSubset(supersetInts, []int{0, 2, 1, 1}))
-	assert.False(t, HasOrderedSubset(supersetInts, []int{1, 5, 1}))
-	assert.False(t, HasOrderedSubset(supersetInts, []int{2, 1, 0}))
+	assert.True(t, ContainsOrderedSubset(supersetInts, []int{0, 1, 2}))
+	assert.True(t, ContainsOrderedSubset(supersetInts, []int{1, 1, 5}))
+	assert.True(t, ContainsOrderedSubset(supersetInts, []int{0, 2, 1, 5}))
+	assert.True(t, ContainsOrderedSubset(supersetInts, []int{1, 2, 5}))
+	assert.False(t, ContainsOrderedSubset(supersetInts, []int{0, 1, 1, 2}))
+	assert.False(t, ContainsOrderedSubset(supersetInts, []int{0, 2, 1, 1}))
+	assert.False(t, ContainsOrderedSubset(supersetInts, []int{1, 5, 1}))
+	assert.False(t, ContainsOrderedSubset(supersetInts, []int{2, 1, 0}))
 
 	// Larger subset than superset
-	assert.False(t, HasOrderedSubset([]int{0, 1, 2}, []int{0, 1, 2, 3}))
+	assert.False(t, ContainsOrderedSubset([]int{0, 1, 2}, []int{0, 1, 2, 3}))
 
 	// Empty slices
-	assert.True(t, HasOrderedSubset([]int{0, 1}, []int{}))
-	assert.False(t, HasOrderedSubset([]int{}, []int{0, 1}))
-	assert.True(t, HasOrderedSubset([]int{}, []int{}))
+	assert.True(t, ContainsOrderedSubset([]int{0, 1}, []int{}))
+	assert.False(t, ContainsOrderedSubset([]int{}, []int{0, 1}))
+	assert.True(t, ContainsOrderedSubset([]int{}, []int{}))
 }
 
-func TestHasStringsWithPrefixesInOrder(t *testing.T) {
+func TestStringSliceContainsOrderedPrefixSubset(t *testing.T) {
 	supersetStrings := []string{"apples", "bananas", "cabbages", "balloons", "applets"}
-	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"a", "b", "c"}))
-	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "ballo", "appl"}))
-	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "banan", "ball", "appl"}))
-	assert.True(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"app", "banan", "ball", "appl"}))
-	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"apple", "ballo", "cab"}))
-	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"ba", "ba", "cab"}))
-	assert.False(t, HasStringsWithPrefixesInOrder(supersetStrings, []string{"a", "cab", "ba", "cab"}))
+	assert.True(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"a", "b", "c"}))
+	assert.True(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"app", "ballo", "appl"}))
+	assert.True(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"app", "banan", "ball", "appl"}))
+	assert.True(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"app", "banan", "ball", "appl"}))
+	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"apple", "ballo", "cab"}))
+	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"ba", "ba", "cab"}))
+	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"a", "cab", "ba", "cab"}))
 }
