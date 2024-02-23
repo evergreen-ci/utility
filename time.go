@@ -11,6 +11,13 @@ var ZeroTime time.Time = time.Unix(0, 0)
 // MaxTime represents the latest useful golang date (219248499-12-06 15:30:07.999999999 +0000 UTC)
 var MaxTime time.Time = time.Unix(1<<63-62135596801, 999999999)
 
+// Day is the duration of one whole typical day (aside from unusual cases like
+// Daylight Savings Time when there's not 24 hours in a single date).
+const Day = 24 * time.Hour
+
+// Weekdays contains all valid days of the week.
+var Weekdays = []time.Weekday{time.Sunday, time.Monday, time.Tuesday, time.Wednesday, time.Thursday, time.Friday, time.Saturday}
+
 // IsZeroTime checks that a time is either equal to golang ZeroTime or
 // UTC ZeroTime.
 func IsZeroTime(t time.Time) bool {
