@@ -32,8 +32,9 @@ type paginatedReadCloser struct {
 
 // NewPaginatedReadCloser returns an io.ReadCloser implementation for paginated
 // HTTP responses. It is safe to pass in a non-paginated response, thus the
-// caller need not check for the appropriate header keys.
-// GetOptions is used to make any subsequent page requests.
+// caller need not check for the appropriate header keys. Optionally pass in
+// a header for subsequent page requests, useful if user information such as
+// API keys are required.
 func NewPaginatedReadCloser(ctx context.Context, client *http.Client, resp *http.Response, reqHeader http.Header) *paginatedReadCloser {
 	return &paginatedReadCloser{
 		ctx:        ctx,
