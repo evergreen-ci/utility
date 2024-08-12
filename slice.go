@@ -177,3 +177,25 @@ func StringSliceContainsOrderedPrefixSubset(superset, subset []string) bool {
 		return strings.HasPrefix(a, b)
 	})
 }
+
+// SliceBatches partitions the elems slice into batches with at most
+// maxElemsPerBatch in each batch. If maxElemsPerBatch is not a positive
+// integer, it will make batches of size 1.
+func MakeSliceBatches[T any](elems []T, maxElemsPerBatch int) [][]T {
+	if len(elems) == 0 {
+		return nil
+	}
+	if maxElemsPerBatch <= 0 {
+		maxElemsPerBatch = 1
+	}
+
+	remainingElems := elems
+	var batches [][]T
+	for len(remainingElems) > maxElemsPerBatch {
+		batches = append(batches, remainingElems[0:maxElemsPerBatch:maxElemsPerBatch])
+		remainingElems = remainingElems[maxElemsPerBatch:]
+	}
+	batches = append(batches, remainingElems)
+
+	return batches
+}

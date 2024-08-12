@@ -1,10 +1,12 @@
 package utility
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStringSliceIntersection(t *testing.T) {
@@ -193,4 +195,59 @@ func TestStringSliceContainsOrderedPrefixSubset(t *testing.T) {
 	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"apple", "ballo", "cab"}))
 	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"ba", "ba", "cab"}))
 	assert.False(t, StringSliceContainsOrderedPrefixSubset(supersetStrings, []string{"a", "cab", "ba", "cab"}))
+}
+
+func TestMakeSliceBatches(t *testing.T) {
+	t.Run("EmptyForNoElementsAndPositiveBatchSize", func(t *testing.T) {
+		assert.Empty(t, MakeSliceBatches([]string{}, 5))
+	})
+	t.Run("EmptyForNoElementsAndInvalidBatchSize", func(t *testing.T) {
+		assert.Empty(t, MakeSliceBatches([]string{}, -5))
+	})
+	t.Run("UsesDefaultBatchSizeForInvalidBatchSize", func(t *testing.T) {
+		elems := []string{"a", "b", "c"}
+		batches := MakeSliceBatches(elems, -5)
+		require.Len(t, batches, len(elems))
+		assert.Equal(t, batches[0], []string{"a"})
+		assert.Equal(t, batches[1], []string{"b"})
+		assert.Equal(t, batches[2], []string{"c"})
+	})
+	t.Run("CreatesOneBatchForElementsThatFitWithinSingleBatch", func(t *testing.T) {
+		elems := []string{"a", "b", "c"}
+		batches := MakeSliceBatches(elems, 5)
+		require.Len(t, batches, 1)
+		assert.Equal(t, batches[0], elems)
+	})
+	t.Run("CreatesMultipleEvenlySizedBatches", func(t *testing.T) {
+		elems := []string{"a", "b", "c", "d"}
+		batches := MakeSliceBatches(elems, 2)
+		require.Len(t, batches, 2)
+		assert.Equal(t, batches[0], []string{"a", "b"})
+		assert.Equal(t, batches[1], []string{"c", "d"})
+	})
+	t.Run("CreatesMultipleBatchesOfMaxBatchSizeAndOneBatchForRemainder", func(t *testing.T) {
+		elems := []string{"a", "b", "c", "d", "e"}
+		batches := MakeSliceBatches(elems, 2)
+		require.Len(t, batches, 3)
+		assert.Equal(t, batches[0], []string{"a", "b"})
+		assert.Equal(t, batches[1], []string{"c", "d"})
+		assert.Equal(t, batches[2], []string{"e"})
+	})
+	t.Run("CreatesProperBatchesForLargeNumberOfElements", func(t *testing.T) {
+		const numElems = 1001
+		elems := make([]string, 0, numElems)
+		for i := 0; i < numElems; i++ {
+			elems = append(elems, fmt.Sprintf("%d", i))
+		}
+
+		const batchSize = 10
+		batches := MakeSliceBatches(elems, batchSize)
+		require.Len(t, batches, 101)
+		for i := 0; i < 100; i++ {
+			require.Len(t, batches[i], batchSize)
+			assert.Equal(t, batches[i], elems[i*batchSize:(i+1)*batchSize])
+		}
+		require.Len(t, batches[100], 1)
+		assert.Equal(t, batches[100], elems[1000:])
+	})
 }
