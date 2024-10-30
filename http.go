@@ -318,6 +318,9 @@ func IsTemporaryError(err error) bool {
 	return false
 }
 
+// RetryRequestOptions specifically are the options when doing
+// a retryable request. It wraps the RetryOptions and adds options
+// on top that are specific to requests.
 type RetryRequestOptions struct {
 	RetryOptions
 
