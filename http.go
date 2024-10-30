@@ -1,8 +1,10 @@
 package utility
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -316,9 +318,17 @@ func IsTemporaryError(err error) bool {
 	return false
 }
 
+type RetryRequestOptions struct {
+	RetryOptions
+
+	// RetryOnInvalidBody is a flag that determines whether to retry
+	// when reading the response body fails.
+	RetryOnInvalidBody bool
+}
+
 // RetryRequest takes an http.Request and makes the request until it's successful,
 // hits a max number of retries, or times out
-func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*http.Response, error) {
+func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions) (*http.Response, error) {
 	r = r.WithContext(ctx)
 
 	client := GetDefaultHTTPRetryableClient()
@@ -339,6 +349,16 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*htt
 		}
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+			if opts.RetryOnInvalidBody {
+				// Test if the body is valid by reading it.
+				body := &bytes.Buffer{}
+				if _, err := body.ReadFrom(resp.Body); err != nil {
+					return true, err
+				}
+
+				// If it is valid, reset the body so the caller can read it.
+				resp.Body = io.NopCloser(body)
+			}
 			return false, nil
 		}
 		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
@@ -348,7 +368,7 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryOptions) (*htt
 		// if we get here it should most likely be a 5xx status code
 
 		return true, errors.Errorf("server returned status %d", resp.StatusCode)
-	}, opts); err != nil {
+	}, opts.RetryOptions); err != nil {
 		return resp, err
 	}
 
