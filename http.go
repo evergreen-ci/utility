@@ -356,8 +356,10 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 				// Test if the body is valid by reading it.
 				body := &bytes.Buffer{}
 				if _, err := body.ReadFrom(resp.Body); err != nil {
+					resp.Body.Close()
 					return true, err
 				}
+				resp.Body.Close() // This is not defered since it is replaced below.
 
 				// If it is valid, reset the body so the caller can read it.
 				resp.Body = io.NopCloser(body)
