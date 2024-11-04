@@ -353,6 +353,8 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			if opts.RetryOnInvalidBody {
+				originalBody := resp.Body
+				defer originalBody.Close()
 				// Test if the body is valid by reading it.
 				body := &bytes.Buffer{}
 				if _, err := body.ReadFrom(resp.Body); err != nil {
