@@ -8,6 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	WalkThroughError = "walking through file tree"
+)
+
 // FileExists provides a clearer interface for checking if a file
 // exists.
 func FileExists(path string) bool {
@@ -106,7 +110,7 @@ func (b *FileListBuilder) Build() ([]string, error) {
 		return nil, errors.New("cannot build file list without an include filter")
 	}
 	if err := filepath.Walk(b.WorkingDir, b.visitPath); err != nil {
-		return nil, errors.Wrap(err, "building file list")
+		return nil, errors.Wrap(err, WalkThroughError)
 	}
 
 	return b.files, nil
