@@ -35,6 +35,7 @@ func TestFileListBuilder(t *testing.T) {
 			}
 			files, err := b.Build()
 			require.Error(t, err)
+			assert.Contains(t, err.Error(), WalkThroughError)
 			assert.Empty(t, files)
 		})
 	})
