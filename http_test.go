@@ -113,8 +113,8 @@ func TestMockHandler(t *testing.T) {
 	t.Run("Serve", func(t *testing.T) {
 		urlString := server.URL + "/example"
 		handler.Header = map[string][]string{
-			"header1": []string{"header1"},
-			"header2": []string{"header1", "header2"},
+			"header1": {"header1"},
+			"header2": {"header1", "header2"},
 		}
 		handler.Body = []byte("some body")
 		handler.StatusCode = http.StatusOK
@@ -136,7 +136,7 @@ func TestMockHandler(t *testing.T) {
 
 		urlString = server.URL + "/example2"
 		handler.Header = map[string][]string{
-			"header1": []string{"header1"},
+			"header1": {"header1"},
 		}
 		handler.Body = []byte("example not found")
 		handler.StatusCode = http.StatusNotFound
