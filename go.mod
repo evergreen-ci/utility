@@ -1,6 +1,6 @@
 module github.com/evergreen-ci/utility
 
-go 1.20
+go 1.24
 
 require (
 	github.com/PuerkitoBio/rehttp v1.1.0

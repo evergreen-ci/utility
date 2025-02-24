@@ -85,7 +85,7 @@ buildvariants:
   - name: lint
     display_name: Lint
     expansions:
-      GOROOT: /opt/golang/go1.20
+      GOROOT: /opt/golang/go1.24
     run_on:
       - ubuntu2204-small
       - ubuntu2204-large
@@ -95,7 +95,7 @@ buildvariants:
   - name: ubuntu
     display_name: Ubuntu 22.04
     expansions:
-      GOROOT: /opt/golang/go1.20
+      GOROOT: /opt/golang/go1.24
     run_on:
       - ubuntu2204-small
       - ubuntu2204-large
