@@ -1,11 +1,13 @@
 package utility
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/PuerkitoBio/rehttp"
@@ -102,6 +104,39 @@ func TestRetryableOauthClient(t *testing.T) {
 		assert.Equal(t, 6, transport.count)
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	})
+}
+
+func TestRetryRequestOn413(t *testing.T) {
+	var callCount int32
+
+	handler := NewMockHandler()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Decide the status code dynamically for the first vs. subsequent calls
+		callCount++
+		if callCount == 1 {
+			handler.StatusCode = http.StatusRequestEntityTooLarge // 413
+		} else {
+			handler.StatusCode = http.StatusOK
+		}
+		handler.ServeHTTP(w, r)
+	}))
+	defer server.Close()
+
+	opts := RetryRequestOptions{
+		RetryOptions: RetryOptions{
+			MaxAttempts: 3,
+		},
+		RetryOn413: true,
+	}
+
+	req, err := http.NewRequest(http.MethodGet, server.URL, nil)
+	require.NoError(t, err, "failed to create request")
+
+	resp, err := RetryRequest(context.Background(), req, opts)
+	require.NoError(t, err, "request failed")
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "expected 200 status code")
+	assert.GreaterOrEqual(t, atomic.LoadInt32(&callCount), int32(2), "expected multiple attempts")
 }
 
 func TestMockHandler(t *testing.T) {

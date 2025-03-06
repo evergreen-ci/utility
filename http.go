@@ -327,6 +327,10 @@ type RetryRequestOptions struct {
 	// RetryOnInvalidBody is a flag that determines whether to retry
 	// when reading the response body fails.
 	RetryOnInvalidBody bool
+
+	// RetryOn413 is a flag that determines whether to retry when
+	// the server returns a 413 status code.
+	RetryOn413 bool
 }
 
 // RetryRequest takes an http.Request and makes the request until it's successful,
@@ -366,6 +370,11 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 			}
 			return false, nil
 		}
+
+		if resp.StatusCode == http.StatusRequestEntityTooLarge && opts.RetryOn413 {
+			return true, errors.Errorf("server returned status %d (request entity too large)", resp.StatusCode)
+		}
+
 		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
 			return false, errors.Errorf("server returned status %d", resp.StatusCode)
 		}
