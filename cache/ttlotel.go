@@ -12,13 +12,7 @@ import (
 var tracer = otel.Tracer("cache")
 
 const (
-	// The unformatted string is the name of the cache.
-	ttlCache = "evergreen.cache.ttl.%s"
-)
-
-var (
-	ttlCacheFoundAttribute       = fmt.Sprintf("%s.found", ttlCache)
-	ttlCacheTimeTakenMSAttribute = fmt.Sprintf("%s.time_taken_ms", ttlCache)
+	ttlCacheFoundAttribute = "evergreen.cache.ttl.%s.found"
 )
 
 // newTTLOtelCache wraps a cache and adds OpenTelemetry tracing to it.
@@ -34,12 +28,10 @@ func (c *otelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	ctx, span := tracer.Start(ctx, "cache.Get")
 	defer span.End()
 
-	before := time.Now()
 	value, ok := c.cache.Get(ctx, id, minimumLifetime)
 
 	span.SetAttributes(
 		attribute.Bool(fmt.Sprintf(ttlCacheFoundAttribute, c.name()), ok),
-		attribute.Float64(fmt.Sprintf(ttlCacheTimeTakenMSAttribute, c.name()), float64(time.Since(before).Milliseconds())),
 	)
 
 	return value, ok
@@ -49,12 +41,7 @@ func (c *otelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt
 	ctx, span := tracer.Start(ctx, "cache.Put")
 	defer span.End()
 
-	before := time.Now()
 	c.cache.Put(ctx, id, value, expiresAt)
-
-	span.SetAttributes(
-		attribute.Float64(fmt.Sprintf(ttlCacheTimeTakenMSAttribute, c.name()), float64(time.Since(before).Milliseconds())),
-	)
 }
 
 func (c *otelTTLCache[T]) name() string {
