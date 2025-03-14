@@ -7,8 +7,6 @@ import (
 )
 
 // NewTTLInMemory creates a new thread-safe in-memory ttl cache.
-// This is most useful when storing tokens that will be handed off to
-// other services.
 func NewTTLInMemory[T any]() *TTLInMemoryCache[T] {
 	return &TTLInMemoryCache[T]{
 		mu:    sync.RWMutex{},
