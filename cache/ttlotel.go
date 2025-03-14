@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-var tracer = otel.Tracer("cache")
+var tracer = otel.GetTracerProvider().Tracer("github.com/evergreen-ci/utility/cache")
 
 const (
 	ttlCacheFoundAttribute = "evergreen.cache.ttl.%s.found"
