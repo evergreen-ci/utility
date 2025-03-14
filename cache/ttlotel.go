@@ -24,16 +24,16 @@ var (
 // WithOtel wraps a cache and adds OpenTelemetry tracing to it.
 // Since this tracks the id, do not use this if the id is sensitive.
 // This can be safely used with sensitive values.
-func WithOtel[T any](cache TTLCache[T], name string) TTLCache[T] {
-	return &otelTTLCache[T]{cache: cache, name: name}
+func WithOtel[T any](cache TTLCache[T], name string) *OtelTTLCache[T] {
+	return &OtelTTLCache[T]{cache: cache, name: name}
 }
 
-type otelTTLCache[T any] struct {
+type OtelTTLCache[T any] struct {
 	cache TTLCache[T]
 	name  string
 }
 
-func (c *otelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *OtelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	ctx, span := tracer.Start(ctx, "cache.Get")
 	defer span.End()
 
@@ -48,7 +48,7 @@ func (c *otelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	return value, ok
 }
 
-func (c *otelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
+func (c *OtelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
 	ctx, span := tracer.Start(ctx, "cache.Put")
 	defer span.End()
 
