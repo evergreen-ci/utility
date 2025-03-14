@@ -1,16 +1,15 @@
-package cache_test
+package cache
 
 import (
 	"testing"
 	"time"
 
-	"github.com/evergreen-ci/utility/cache"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTLLInMemoryCache(t *testing.T) {
 	t.Run("InvalidKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]("test")
+		cache := NewTTLInMemory[int]()
 
 		id, ok := cache.Get(t.Context(), "key", time.Minute)
 		assert.False(t, ok)
@@ -20,7 +19,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ValidKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]("test")
+		cache := NewTTLInMemory[int]()
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 
@@ -38,7 +37,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ReplaceKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]("test")
+		cache := NewTTLInMemory[int]()
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 
