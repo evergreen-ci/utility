@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -10,22 +9,19 @@ import (
 // NewTTLInMemory creates a new thread-safe in-memory ttl cache.
 // This is most useful when storing tokens that will be handed off to
 // other services.
-func NewTTLInMemory[T any](name string) TTLCache[T] {
-	return &ttlInMemoryCache[T]{
-		_name: name,
+func NewTTLInMemory[T any]() *TTLInMemoryCache[T] {
+	return &TTLInMemoryCache[T]{
 		mu:    sync.RWMutex{},
 		cache: make(map[string]ttlValue[T]),
 	}
 }
 
-type ttlInMemoryCache[T any] struct {
-	_name string
-
+type TTLInMemoryCache[T any] struct {
 	mu    sync.RWMutex
 	cache map[string]ttlValue[T]
 }
 
-func (c *ttlInMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *TTLInMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -42,7 +38,7 @@ func (c *ttlInMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime 
 	return cachedToken.value, true
 }
 
-func (c *ttlInMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt time.Time) {
+func (c *TTLInMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt time.Time) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -50,8 +46,4 @@ func (c *ttlInMemoryCache[T]) Put(_ context.Context, id string, value T, expires
 		value:     value,
 		expiresAt: expiresAt,
 	}
-}
-
-func (c *ttlInMemoryCache[T]) name() string {
-	return fmt.Sprintf("in-memory-ttl.%s", c._name)
 }
