@@ -5,9 +5,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTLLInMemoryCache(t *testing.T) {
+	t.Run("ImplementsTTLCache", func(t *testing.T) {
+		require.Implements(t, (*TTLCache[int])(nil), NewTTLInMemory[int]())
+	})
 	t.Run("InvalidKey", func(t *testing.T) {
 		cache := NewTTLInMemory[int]()
 
