@@ -10,7 +10,7 @@ import (
 
 func TestTLLInMemoryCache(t *testing.T) {
 	t.Run("InvalidKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]()
+		cache := cache.NewTTLInMemory[int]("test")
 
 		id, ok := cache.Get(t.Context(), "key", time.Minute)
 		assert.False(t, ok)
@@ -20,7 +20,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ValidKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]()
+		cache := cache.NewTTLInMemory[int]("test")
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 
@@ -38,7 +38,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ReplaceKey", func(t *testing.T) {
-		cache := cache.NewTTLInMemory[int]()
+		cache := cache.NewTTLInMemory[int]("test")
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 

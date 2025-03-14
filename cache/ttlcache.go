@@ -11,6 +11,8 @@ type TTLCache[T any] interface {
 	Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool)
 	// Put adds a value to the cache with the given expiration time.
 	Put(ctx context.Context, id string, value T, expiresAt time.Time)
+	// name returns the name of the cache.
+	name() string
 }
 
 // ttlValue is a generic type that holds a value and an expiration time.

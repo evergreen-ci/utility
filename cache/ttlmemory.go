@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -9,14 +10,17 @@ import (
 // NewTTLInMemory creates a new thread-safe in-memory ttl cache.
 // This is most useful when storing tokens that will be handed off to
 // other services.
-func NewTTLInMemory[T any]() TTLCache[T] {
-	return &ttlInMemoryCache[T]{
+func NewTTLInMemory[T any](name string) TTLCache[T] {
+	return newTTLOtelCache(&ttlInMemoryCache[T]{
+		_name: name,
 		mu:    sync.RWMutex{},
 		cache: make(map[string]ttlValue[T]),
-	}
+	})
 }
 
 type ttlInMemoryCache[T any] struct {
+	_name string
+
 	mu    sync.RWMutex
 	cache map[string]ttlValue[T]
 }
@@ -46,4 +50,8 @@ func (c *ttlInMemoryCache[T]) Put(_ context.Context, id string, value T, expires
 		value:     value,
 		expiresAt: expiresAt,
 	}
+}
+
+func (c *ttlInMemoryCache[T]) name() string {
+	return fmt.Sprintf("in-memory-ttl.%s", c._name)
 }
