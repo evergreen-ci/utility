@@ -11,11 +11,11 @@ import (
 // This is most useful when storing tokens that will be handed off to
 // other services.
 func NewTTLInMemory[T any](name string) TTLCache[T] {
-	return newTTLOtelCache(&ttlInMemoryCache[T]{
+	return &ttlInMemoryCache[T]{
 		_name: name,
 		mu:    sync.RWMutex{},
 		cache: make(map[string]ttlValue[T]),
-	})
+	}
 }
 
 type ttlInMemoryCache[T any] struct {
