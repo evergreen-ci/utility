@@ -89,7 +89,7 @@ buildvariants:
     run_on:
       - ubuntu2204-small
       - ubuntu2204-large
-    tasks: 
+    tasks:
       - name: ".report"
 
   - name: ubuntu
