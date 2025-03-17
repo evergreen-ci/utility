@@ -68,6 +68,14 @@ tasks:
     tags: ["report"]
     name: lint-utility
 
+  - <<: *run-build
+    tags: ["test"]
+    name: test-cache
+
+  - <<: *run-build
+    tags: ["report"]
+    name: lint-cache
+
   - name: verify-mod-tidy
     tags: ["report"]
     commands:
