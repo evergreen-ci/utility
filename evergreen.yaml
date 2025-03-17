@@ -68,6 +68,14 @@ tasks:
     tags: ["report"]
     name: lint-utility
 
+  - <<: *run-build
+    tags: ["test"]
+    name: test-cache
+
+  - <<: *run-build
+    tags: ["report"]
+    name: lint-cache
+
   - name: verify-mod-tidy
     tags: ["report"]
     commands:
@@ -89,7 +97,7 @@ buildvariants:
     run_on:
       - ubuntu2204-small
       - ubuntu2204-large
-    tasks: 
+    tasks:
       - name: ".report"
 
   - name: ubuntu
