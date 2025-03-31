@@ -1,12 +1,12 @@
-package cache
+package ttlcache
 
 import (
 	"context"
 	"time"
 )
 
-// TTLCache holds items in a cache with a time-to-live.
-type TTLCache[T any] interface {
+// Cache holds items in a cache with a time-to-live.
+type Cache[T any] interface {
 	// Get gets the value with id with at least the minimum lifetime remaining.
 	Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool)
 	// Put adds a value to the cache with the given expiration time.

@@ -1,4 +1,4 @@
-package cache
+package ttlcache
 
 import (
 	"testing"
@@ -8,12 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTLLInMemoryCache(t *testing.T) {
+func testCache(t *testing.T, cacheFunc func() Cache[int]) {
 	t.Run("ImplementsTTLCache", func(t *testing.T) {
-		require.Implements(t, (*TTLCache[int])(nil), NewTTLInMemory[int]())
+		require.Implements(t, (*Cache[int])(nil), cacheFunc())
 	})
+
 	t.Run("InvalidKey", func(t *testing.T) {
-		cache := NewTTLInMemory[int]()
+		cache := cacheFunc()
 
 		id, ok := cache.Get(t.Context(), "key", time.Minute)
 		assert.False(t, ok)
@@ -23,7 +24,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ValidKey", func(t *testing.T) {
-		cache := NewTTLInMemory[int]()
+		cache := cacheFunc()
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 
@@ -41,7 +42,7 @@ func TestTLLInMemoryCache(t *testing.T) {
 	})
 
 	t.Run("ReplaceKey", func(t *testing.T) {
-		cache := NewTTLInMemory[int]()
+		cache := cacheFunc()
 
 		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
 

@@ -1,4 +1,4 @@
-package cache
+package ttlcache
 
 import (
 	"context"
@@ -24,12 +24,12 @@ var (
 // WithOtel wraps a cache and adds OpenTelemetry tracing to it.
 // Since this tracks the id, do not use this if the id is sensitive.
 // This can be safely used with sensitive values.
-func WithOtel[T any](cache TTLCache[T], name string) *OtelTTLCache[T] {
+func WithOtel[T any](cache Cache[T], name string) *OtelTTLCache[T] {
 	return &OtelTTLCache[T]{cache: cache, name: name}
 }
 
 type OtelTTLCache[T any] struct {
-	cache TTLCache[T]
+	cache Cache[T]
 	name  string
 }
 
