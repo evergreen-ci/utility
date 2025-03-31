@@ -70,11 +70,11 @@ tasks:
 
   - <<: *run-build
     tags: ["test"]
-    name: test-cache
+    name: test-ttlcache
 
   - <<: *run-build
     tags: ["report"]
-    name: lint-cache
+    name: lint-ttlcache
 
   - name: verify-mod-tidy
     tags: ["report"]

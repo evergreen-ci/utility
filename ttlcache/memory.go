@@ -1,4 +1,4 @@
-package cache
+package ttlcache
 
 import (
 	"context"
@@ -6,20 +6,20 @@ import (
 	"time"
 )
 
-// NewTTLInMemory creates a new thread-safe in-memory ttl cache.
-func NewTTLInMemory[T any]() *TTLInMemoryCache[T] {
-	return &TTLInMemoryCache[T]{
+// NewInMemory creates a new thread-safe in-memory ttl cache.
+func NewInMemory[T any]() *InMemoryCache[T] {
+	return &InMemoryCache[T]{
 		mu:    sync.RWMutex{},
 		cache: make(map[string]ttlValue[T]),
 	}
 }
 
-type TTLInMemoryCache[T any] struct {
+type InMemoryCache[T any] struct {
 	mu    sync.RWMutex
 	cache map[string]ttlValue[T]
 }
 
-func (c *TTLInMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *InMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -36,7 +36,7 @@ func (c *TTLInMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime 
 	return cachedToken.value, true
 }
 
-func (c *TTLInMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt time.Time) {
+func (c *InMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt time.Time) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
