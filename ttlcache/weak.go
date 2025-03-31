@@ -1,4 +1,4 @@
-package cache
+package ttlcache
 
 import (
 	"context"
@@ -6,14 +6,15 @@ import (
 	"weak"
 )
 
+// NewWeakInMemory creates a new thread-safe in-memory ttl cache that uses weak references.
 func NewWeakInMemory[T any]() *WeakInMemory[T] {
 	return &WeakInMemory[T]{
-		cache: NewTTLInMemory[weak.Pointer[T]](),
+		cache: NewInMemory[weak.Pointer[T]](),
 	}
 }
 
 type WeakInMemory[T any] struct {
-	cache *TTLInMemoryCache[weak.Pointer[T]]
+	cache *InMemoryCache[weak.Pointer[T]]
 }
 
 func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
