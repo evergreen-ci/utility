@@ -3,7 +3,7 @@ module github.com/evergreen-ci/utility
 go 1.24
 
 require (
-	github.com/PuerkitoBio/rehttp v1.1.0
+	github.com/PuerkitoBio/rehttp v1.2.0
 	github.com/jpillora/backoff v1.0.0
 	github.com/peterhellberg/link v1.2.0
 	github.com/pkg/errors v0.9.1
