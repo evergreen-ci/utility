@@ -192,3 +192,52 @@ func TestMockHandler(t *testing.T) {
 		assert.NoError(t, handler.GetWriteError())
 	})
 }
+
+// 	assert.Equal(t, int32(2), callCount, "expected exactly two total attempts")
+// }
+
+func TestRetryRequestBodyRemainsValidOnSecondAttempt(t *testing.T) {
+	var callCount int32
+
+	// On the first attempt, the server reads the body, then returns 413.
+	// On the second attempt, it again reads the body and returns 200.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		reqBody, err := io.ReadAll(r.Body)
+		require.NoError(t, err, "failed to read request body")
+
+		if atomic.AddInt32(&callCount, 1) == 1 {
+			w.WriteHeader(http.StatusRequestEntityTooLarge) // 413
+			_, _ = w.Write([]byte("failing body"))
+		} else {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("valid body: " + string(reqBody)))
+		}
+	}))
+	defer server.Close()
+
+	opts := RetryRequestOptions{
+		RetryOptions: RetryOptions{
+			MaxAttempts: 2,
+		},
+		RetryOn413: true,
+	}
+
+	// We include some request body content to confirm it remains valid across retries.
+	req, err := http.NewRequest(http.MethodPost, server.URL, strings.NewReader("request body data"))
+	require.NoError(t, err, "failed to create request")
+
+	resp, err := RetryRequest(context.Background(), req, opts)
+	require.NoError(t, err, "request failed")
+	defer resp.Body.Close()
+
+	assert.Equal(t, int32(2), callCount, "expected exactly two total attempts")
+
+	// Read the final response body (which should be from the second request).
+	data, readErr := io.ReadAll(resp.Body)
+	require.NoError(t, readErr, "failed to read body on second attempt")
+
+	// The second attempt should contain the original request body text:
+	assert.Contains(t, string(data), "request body data", "expected second attempt to see same request body")
+
+}

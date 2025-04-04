@@ -338,6 +338,17 @@ type RetryRequestOptions struct {
 func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions) (*http.Response, error) {
 	r = r.WithContext(ctx)
 
+	// Save the entire request body so we can resend it on each attempt.
+	var requestBody []byte
+	if r.Body != nil {
+		bodyBytes, readErr := io.ReadAll(r.Body)
+		if readErr != nil {
+			return nil, errors.Wrap(readErr, "failed to read request body")
+		}
+		r.Body.Close()
+		requestBody = bodyBytes
+	}
+
 	client := GetDefaultHTTPRetryableClient()
 	defer PutHTTPClient(client)
 
@@ -349,6 +360,11 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 		defer func() {
 			attempt++
 		}()
+
+		// Ensure the same body is attached for each attempt
+		if requestBody != nil {
+			r.Body = io.NopCloser(bytes.NewReader(requestBody))
+		}
 
 		resp, err = client.Do(r)
 		if err != nil {
