@@ -25,6 +25,8 @@ func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	}
 	val := weakVal.Value()
 	if val == nil {
+		w.cache.Delete(ctx, id)
+
 		var zero T
 		return zero, false
 	}

@@ -19,7 +19,7 @@ type InMemoryCache[T any] struct {
 	cache map[string]ttlValue[T]
 }
 
-func (c *InMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *InMemoryCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -29,6 +29,8 @@ func (c *InMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime tim
 		return value, false
 	}
 	if time.Until(cachedToken.expiresAt) < minimumLifetime {
+		c.Delete(ctx, id)
+
 		var value T
 		return value, false
 	}
@@ -44,4 +46,11 @@ func (c *InMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt 
 		value:     value,
 		expiresAt: expiresAt,
 	}
+}
+
+func (c *InMemoryCache[T]) Delete(_ context.Context, id string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	delete(c.cache, id)
 }
