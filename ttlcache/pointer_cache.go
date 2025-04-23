@@ -23,14 +23,14 @@ type PointerCache[T any] interface {
 // for testing purposes.
 // In production code, use the PointerCache directly.
 func convertPointerCacheToCache[T any](ptrCache PointerCache[T]) Cache[T] {
-	return &PointerToValueCache[T]{cache: ptrCache}
+	return &pointerToValueCache[T]{cache: ptrCache}
 }
 
-type PointerToValueCache[T any] struct {
+type pointerToValueCache[T any] struct {
 	cache PointerCache[T]
 }
 
-func (c *PointerToValueCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *pointerToValueCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	ptr, ok := c.cache.Get(ctx, id, minimumLifetime)
 	if !ok || ptr == nil {
 		var zero T
@@ -39,10 +39,10 @@ func (c *PointerToValueCache[T]) Get(ctx context.Context, id string, minimumLife
 	return *ptr, true
 }
 
-func (c *PointerToValueCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
+func (c *pointerToValueCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
 	c.cache.Put(ctx, id, &value, expiresAt)
 }
 
-func (c *PointerToValueCache[T]) Delete(ctx context.Context, id string) {
+func (c *pointerToValueCache[T]) Delete(ctx context.Context, id string) {
 	c.cache.Delete(ctx, id)
 }
