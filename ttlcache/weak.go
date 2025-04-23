@@ -21,26 +21,24 @@ type WeakInMemory[T any] struct {
 	cache *InMemoryCache[weak.Pointer[T]]
 }
 
-func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (*T, bool) {
 	weakVal, found := w.cache.Get(ctx, id, minimumLifetime)
 	if !found {
-		var zero T
-		return zero, false
+		return nil, false
 	}
 	val := weakVal.Value()
 	if val == nil {
 		// Clean up the cache if the value is nil.
 		w.Delete(ctx, id)
 
-		var zero T
-		return zero, false
+		return nil, false
 	}
 
-	return *val, true
+	return val, true
 }
 
-func (w *WeakInMemory[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
-	w.cache.Put(ctx, id, weak.Make(&value), expiresAt)
+func (w *WeakInMemory[T]) Put(ctx context.Context, id string, value *T, expiresAt time.Time) {
+	w.cache.Put(ctx, id, weak.Make(value), expiresAt)
 }
 
 func (c *WeakInMemory[T]) Delete(ctx context.Context, id string) {
