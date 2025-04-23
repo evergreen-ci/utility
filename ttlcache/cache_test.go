@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func testPointerCache(t *testing.T, pointerCacheFunc func() PointerCache[int]) {
+	testCache(t, func() Cache[int] {
+		return convertPointerCacheToCache(pointerCacheFunc())
+	})
+}
+
 func testCache(t *testing.T, cacheFunc func() Cache[int]) {
 	t.Run("InvalidKey", func(t *testing.T) {
 		cache := cacheFunc()
