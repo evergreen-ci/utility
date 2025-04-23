@@ -25,7 +25,8 @@ func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	}
 	val := weakVal.Value()
 	if val == nil {
-		w.cache.Delete(ctx, id)
+		// Clean up the cache if the value is nil
+		w.Delete(ctx, id)
 
 		var zero T
 		return zero, false
@@ -36,4 +37,8 @@ func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime ti
 
 func (w *WeakInMemory[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
 	w.cache.Put(ctx, id, weak.Make(&value), expiresAt)
+}
+
+func (c *WeakInMemory[T]) Delete(ctx context.Context, id string) {
+	c.cache.Delete(ctx, id)
 }

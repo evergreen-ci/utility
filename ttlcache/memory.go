@@ -29,8 +29,6 @@ func (c *InMemoryCache[T]) Get(ctx context.Context, id string, minimumLifetime t
 		return value, false
 	}
 	if time.Until(cachedToken.expiresAt) < minimumLifetime {
-		c.Delete(ctx, id)
-
 		var value T
 		return value, false
 	}

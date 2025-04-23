@@ -59,3 +59,15 @@ func (c *OtelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt
 
 	c.cache.Put(ctx, id, value, expiresAt)
 }
+
+func (c *OtelTTLCache[T]) Delete(ctx context.Context, id string) {
+	ctx, span := tracer.Start(ctx, "cache.Delete")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String(ttlCacheNameAttribute, c.name),
+		attribute.String(ttlCacheIDAttribute, id),
+	)
+
+	c.cache.Delete(ctx, id)
+}
