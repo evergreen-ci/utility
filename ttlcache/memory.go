@@ -19,7 +19,7 @@ type InMemoryCache[T any] struct {
 	cache map[string]ttlValue[T]
 }
 
-func (c *InMemoryCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *InMemoryCache[T]) Get(_ context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
