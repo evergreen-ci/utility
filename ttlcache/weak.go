@@ -7,6 +7,10 @@ import (
 )
 
 // NewWeakInMemory creates a new thread-safe in-memory ttl cache that uses weak references.
+// Weak references allow the garbage collector to reclaim the memory used by the value
+// when there are no strong references to it. This is useful for caching large objects
+// that may not be needed for long periods of time, as it allows the memory to be reclaimed
+// when the object is no longer needed.
 func NewWeakInMemory[T any]() *WeakInMemory[T] {
 	return &WeakInMemory[T]{
 		cache: NewInMemory[weak.Pointer[T]](),
@@ -25,7 +29,7 @@ func (w *WeakInMemory[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	}
 	val := weakVal.Value()
 	if val == nil {
-		// Clean up the cache if the value is nil
+		// Clean up the cache if the value is nil.
 		w.Delete(ctx, id)
 
 		var zero T
