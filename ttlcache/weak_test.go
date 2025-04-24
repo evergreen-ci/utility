@@ -14,7 +14,7 @@ func TestTTLWeakInMemoryCache(t *testing.T) {
 		return NewWeakInMemory[int]()
 	})
 
-	t.Run("RelasesMemory", func(t *testing.T) {
+	t.Run("ReleasesMemory", func(t *testing.T) {
 		getItem := func() *string {
 			i := "itemValue"
 			return &i
