@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testCache(t *testing.T, cacheFunc func() Cache[*int]) {
@@ -26,9 +27,10 @@ func testCache(t *testing.T, cacheFunc func() Cache[*int]) {
 		cache.Put(t.Context(), "key", &val, time.Now().Add(time.Second))
 
 		t.Run("BeforeExpiration", func(t *testing.T) {
-			id, ok := cache.Get(t.Context(), "key", time.Millisecond)
-			assert.True(t, ok)
-			assert.Equal(t, val, id)
+			cachedVal, ok := cache.Get(t.Context(), "key", time.Millisecond)
+			require.True(t, ok)
+			require.NotNil(t, cachedVal)
+			assert.Equal(t, val, *cachedVal)
 		})
 
 		t.Run("AfterExpiration", func(t *testing.T) {
@@ -49,15 +51,16 @@ func testCache(t *testing.T, cacheFunc func() Cache[*int]) {
 		cache.Put(t.Context(), "key", &secondVal, time.Now().Add(time.Hour))
 
 		t.Run("BeforeExpiration", func(t *testing.T) {
-			id, ok := cache.Get(t.Context(), "key", time.Minute)
-			assert.True(t, ok)
-			assert.Equal(t, secondVal, id)
+			cachedVal, ok := cache.Get(t.Context(), "key", time.Minute)
+			require.True(t, ok)
+			require.NotNil(t, cachedVal)
+			assert.Equal(t, secondVal, *cachedVal)
 		})
 
 		t.Run("AfterExpiration", func(t *testing.T) {
-			id, ok := cache.Get(t.Context(), "key", time.Hour*2)
+			cachedVal, ok := cache.Get(t.Context(), "key", time.Hour*2)
 			assert.False(t, ok)
-			assert.Zero(t, id)
+			assert.Zero(t, cachedVal)
 		})
 	})
 }
