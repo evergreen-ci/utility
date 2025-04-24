@@ -7,13 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testPointerCache(t *testing.T, pointerCacheFunc func() PointerCache[int]) {
-	testCache(t, func() Cache[int] {
-		return convertPointerCacheToCache(pointerCacheFunc())
-	})
-}
-
-func testCache(t *testing.T, cacheFunc func() Cache[int]) {
+func testCache(t *testing.T, cacheFunc func() Cache[*int]) {
 	t.Run("InvalidKey", func(t *testing.T) {
 		cache := cacheFunc()
 
@@ -21,18 +15,20 @@ func testCache(t *testing.T, cacheFunc func() Cache[int]) {
 		assert.False(t, ok)
 		assert.Zero(t, id)
 
-		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
+		val := 22
+		cache.Put(t.Context(), "key", &val, time.Now().Add(time.Second))
 	})
 
 	t.Run("ValidKey", func(t *testing.T) {
 		cache := cacheFunc()
 
-		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
+		val := 22
+		cache.Put(t.Context(), "key", &val, time.Now().Add(time.Second))
 
 		t.Run("BeforeExpiration", func(t *testing.T) {
 			id, ok := cache.Get(t.Context(), "key", time.Millisecond)
 			assert.True(t, ok)
-			assert.Equal(t, 22, id)
+			assert.Equal(t, val, id)
 		})
 
 		t.Run("AfterExpiration", func(t *testing.T) {
@@ -45,15 +41,17 @@ func testCache(t *testing.T, cacheFunc func() Cache[int]) {
 	t.Run("ReplaceKey", func(t *testing.T) {
 		cache := cacheFunc()
 
-		cache.Put(t.Context(), "key", 22, time.Now().Add(time.Second))
+		val := 22
+		cache.Put(t.Context(), "key", &val, time.Now().Add(time.Second))
 
 		// Overwrite the key with a new value and a longer expiration time.
-		cache.Put(t.Context(), "key", 23, time.Now().Add(time.Hour))
+		secondVal := 23
+		cache.Put(t.Context(), "key", &secondVal, time.Now().Add(time.Hour))
 
 		t.Run("BeforeExpiration", func(t *testing.T) {
 			id, ok := cache.Get(t.Context(), "key", time.Minute)
 			assert.True(t, ok)
-			assert.Equal(t, 23, id)
+			assert.Equal(t, secondVal, id)
 		})
 
 		t.Run("AfterExpiration", func(t *testing.T) {

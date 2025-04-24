@@ -5,7 +5,7 @@ import (
 )
 
 func TestTTLWeakInMemoryCache(t *testing.T) {
-	testPointerCache(t, func() PointerCache[int] {
+	testCache(t, func() Cache[*int] {
 		return NewWeakInMemory[int]()
 	})
 }
