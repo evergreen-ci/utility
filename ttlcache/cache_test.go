@@ -5,14 +5,15 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func testCache(t *testing.T, cacheFunc func() Cache[int]) {
-	t.Run("ImplementsTTLCache", func(t *testing.T) {
-		require.Implements(t, (*Cache[int])(nil), cacheFunc())
+func testPointerCache(t *testing.T, pointerCacheFunc func() PointerCache[int]) {
+	testCache(t, func() Cache[int] {
+		return convertPointerCacheToCache(pointerCacheFunc())
 	})
+}
 
+func testCache(t *testing.T, cacheFunc func() Cache[int]) {
 	t.Run("InvalidKey", func(t *testing.T) {
 		cache := cacheFunc()
 

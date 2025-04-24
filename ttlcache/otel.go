@@ -24,16 +24,16 @@ var (
 // WithOtel wraps a cache and adds OpenTelemetry tracing to it.
 // Since this tracks the id, do not use this if the id is sensitive.
 // This can be safely used with sensitive values.
-func WithOtel[T any](cache Cache[T], name string) *OtelTTLCache[T] {
-	return &OtelTTLCache[T]{cache: cache, name: name}
+func WithOtel[T any](cache Cache[T], name string) *OtelCache[T] {
+	return &OtelCache[T]{cache: cache, name: name}
 }
 
-type OtelTTLCache[T any] struct {
+type OtelCache[T any] struct {
 	cache Cache[T]
 	name  string
 }
 
-func (c *OtelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
+func (c *OtelCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (T, bool) {
 	ctx, span := tracer.Start(ctx, "cache.Get")
 	defer span.End()
 
@@ -48,7 +48,7 @@ func (c *OtelTTLCache[T]) Get(ctx context.Context, id string, minimumLifetime ti
 	return value, ok
 }
 
-func (c *OtelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
+func (c *OtelCache[T]) Put(ctx context.Context, id string, value T, expiresAt time.Time) {
 	ctx, span := tracer.Start(ctx, "cache.Put")
 	defer span.End()
 
@@ -58,4 +58,67 @@ func (c *OtelTTLCache[T]) Put(ctx context.Context, id string, value T, expiresAt
 	)
 
 	c.cache.Put(ctx, id, value, expiresAt)
+}
+
+func (c *OtelCache[T]) Delete(ctx context.Context, id string) {
+	ctx, span := tracer.Start(ctx, "cache.Delete")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String(ttlCacheNameAttribute, c.name),
+		attribute.String(ttlCacheIDAttribute, id),
+	)
+
+	c.cache.Delete(ctx, id)
+}
+
+// WithPointerOtel wraps a pointer cache and adds OpenTelemetry tracing to it.
+// Since this tracks the id, do not use this if the id is sensitive.
+// This can be safely used with sensitive values.
+func WithPointerOtel[T any](cache PointerCache[T], name string) *PointerOtelCache[T] {
+	return &PointerOtelCache[T]{cache: cache, name: name}
+}
+
+type PointerOtelCache[T any] struct {
+	cache PointerCache[T]
+	name  string
+}
+
+func (c *PointerOtelCache[T]) Get(ctx context.Context, id string, minimumLifetime time.Duration) (*T, bool) {
+	ctx, span := tracer.Start(ctx, "cache.Get")
+	defer span.End()
+
+	value, ok := c.cache.Get(ctx, id, minimumLifetime)
+
+	span.SetAttributes(
+		attribute.String(ttlCacheNameAttribute, c.name),
+		attribute.String(ttlCacheIDAttribute, id),
+		attribute.Bool(ttlCacheFoundAttribute, ok),
+	)
+
+	return value, ok
+}
+
+func (c *PointerOtelCache[T]) Put(ctx context.Context, id string, value *T, expiresAt time.Time) {
+	ctx, span := tracer.Start(ctx, "cache.Put")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String(ttlCacheNameAttribute, c.name),
+		attribute.String(ttlCacheIDAttribute, id),
+	)
+
+	c.cache.Put(ctx, id, value, expiresAt)
+}
+
+func (c *PointerOtelCache[T]) Delete(ctx context.Context, id string) {
+	ctx, span := tracer.Start(ctx, "cache.Delete")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String(ttlCacheNameAttribute, c.name),
+		attribute.String(ttlCacheIDAttribute, id),
+	)
+
+	c.cache.Delete(ctx, id)
 }

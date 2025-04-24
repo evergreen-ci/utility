@@ -45,3 +45,10 @@ func (c *InMemoryCache[T]) Put(_ context.Context, id string, value T, expiresAt 
 		expiresAt: expiresAt,
 	}
 }
+
+func (c *InMemoryCache[T]) Delete(_ context.Context, id string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	delete(c.cache, id)
+}
