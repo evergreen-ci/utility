@@ -50,7 +50,7 @@ func TestAppendAttributesToContext(t *testing.T) {
 			attribute.String("key1", "value1"),
 			attribute.Int("key2", 42),
 		}
-		ctx := AppendAttributesToContext(context.Background(), attrs)
+		ctx := ContextWithAppendedAttributes(context.Background(), attrs)
 		assert.Equal(t, attrs, attributesFromContext(ctx))
 
 		childCtx := context.WithValue(ctx, "unrelatedContextKey", "unrelatedContextValue")
@@ -60,13 +60,13 @@ func TestAppendAttributesToContext(t *testing.T) {
 		oldAttrs := []attribute.KeyValue{
 			attribute.String("oldKey", "oldValue"),
 		}
-		oldCtx := AppendAttributesToContext(context.Background(), oldAttrs)
+		oldCtx := ContextWithAppendedAttributes(context.Background(), oldAttrs)
 		assert.Equal(t, oldAttrs, attributesFromContext(oldCtx))
 
 		newAttrs := []attribute.KeyValue{
 			attribute.String("newKey", "newValue"),
 		}
-		newCtx := AppendAttributesToContext(oldCtx, newAttrs)
+		newCtx := ContextWithAppendedAttributes(oldCtx, newAttrs)
 		expectedAttrs := append(oldAttrs, newAttrs...)
 		assert.Equal(t, expectedAttrs, attributesFromContext(newCtx), "new context should have both previous and newly-added attributes")
 		assert.Equal(t, oldAttrs, attributesFromContext(oldCtx), "original context attributes should remain unchanged")

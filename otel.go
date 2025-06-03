@@ -42,10 +42,10 @@ func ContextWithAttributes(ctx context.Context, attributes []attribute.KeyValue)
 	return context.WithValue(ctx, otelAttributeContextKey, attributes)
 }
 
-// AppendAttributesToContext is the same as ContextWithAttributes but creates a
-// child context that appends the provided attributes to the existing attributes
-// in the context (if there are any) rather than overriding them.
-func AppendAttributesToContext(ctx context.Context, toAppend []attribute.KeyValue) context.Context {
+// ContextWithAppendedAttributes is the same as ContextWithAttributes but
+// creates a child context that appends the provided attributes to the existing
+// attributes in the context (if there are any) rather than overriding them.
+func ContextWithAppendedAttributes(ctx context.Context, toAppend []attribute.KeyValue) context.Context {
 	combined := append(attributesFromContext(ctx), toAppend...)
 	return ContextWithAttributes(ctx, combined)
 }
