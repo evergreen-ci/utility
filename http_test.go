@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/PuerkitoBio/rehttp"
 	"github.com/stretchr/testify/assert"
@@ -240,4 +241,41 @@ func TestRetryRequestBodyRemainsValidOnSecondAttempt(t *testing.T) {
 	// The second attempt should contain the original request body text:
 	assert.Contains(t, string(data), "request body data", "expected second attempt to see same request body")
 
+}
+
+func TestRetryRequestOnRetry(t *testing.T) {
+	var serverCalls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.AddInt32(&serverCalls, 1) == 1 {
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	defer server.Close()
+
+	var hookCalls []FailedAttempt
+	opts := RetryRequestOptions{
+		RetryOptions: RetryOptions{
+			MaxAttempts: 3,
+			MinDelay:    10 * time.Millisecond,
+		},
+		RetryOn413: true,
+		OnRetry: func(fa FailedAttempt) {
+			hookCalls = append(hookCalls, fa)
+		},
+	}
+
+	req, err := http.NewRequest(http.MethodGet, server.URL, nil)
+	require.NoError(t, err)
+
+	resp, err := RetryRequest(context.Background(), req, opts)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	require.Len(t, hookCalls, 1)
+	assert.Equal(t, 1, hookCalls[0].Attempt)
+	assert.Greater(t, hookCalls[0].Delay, time.Duration(0))
+	assert.NotNil(t, hookCalls[0].Response)
+	assert.NotNil(t, hookCalls[0].Err)
 }

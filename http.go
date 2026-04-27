@@ -318,6 +318,15 @@ func IsTemporaryError(err error) bool {
 	return false
 }
 
+// FailedAttempt holds information about a single failed request attempt.
+type FailedAttempt struct {
+	Attempt  int
+	Delay    time.Duration
+	Request  *http.Request
+	Response *http.Response
+	Err      error
+}
+
 // RetryRequestOptions specifically are the options when doing
 // a retryable request. It wraps the RetryOptions and adds options
 // on top that are specific to requests.
@@ -331,6 +340,9 @@ type RetryRequestOptions struct {
 	// RetryOn413 is a flag that determines whether to retry when
 	// the server returns a 413 status code.
 	RetryOn413 bool
+
+	// OnRetry is an optional callback ran after each failed attempt.
+	OnRetry func(FailedAttempt)
 }
 
 // RetryRequest takes an http.Request and makes the request until it's successful,
@@ -352,6 +364,19 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 	client := GetDefaultHTTPRetryableClient()
 	defer PutHTTPClient(client)
 
+	hookBackoff := getBackoff(opts.RetryOptions)
+	fireOnRetry := func(attempt int, failedResp *http.Response, err error) {
+		if opts.OnRetry != nil {
+			opts.OnRetry(FailedAttempt{
+				Attempt:  attempt,
+				Delay:    hookBackoff.Duration(),
+				Request:  r,
+				Response: failedResp,
+				Err:      err,
+			})
+		}
+	}
+
 	attempt := 1
 	var resp *http.Response
 	var err error
@@ -368,6 +393,7 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 
 		resp, err = client.Do(r)
 		if err != nil {
+			fireOnRetry(attempt, nil, err)
 			return true, err
 		}
 
@@ -378,6 +404,7 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 				// Test if the body is valid by reading it.
 				body := &bytes.Buffer{}
 				if _, err := body.ReadFrom(resp.Body); err != nil {
+					fireOnRetry(attempt, resp, err)
 					return true, err
 				}
 
@@ -388,7 +415,9 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 		}
 
 		if resp.StatusCode == http.StatusRequestEntityTooLarge && opts.RetryOn413 {
-			return true, errors.Errorf("server returned status %d (request entity too large)", resp.StatusCode)
+			retryErr := errors.Errorf("server returned status %d (request entity too large)", resp.StatusCode)
+			fireOnRetry(attempt, resp, retryErr)
+			return true, retryErr
 		}
 
 		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
@@ -396,8 +425,9 @@ func RetryRequest(ctx context.Context, r *http.Request, opts RetryRequestOptions
 		}
 
 		// if we get here it should most likely be a 5xx status code
-
-		return true, errors.Errorf("server returned status %d", resp.StatusCode)
+		retryErr := errors.Errorf("server returned status %d", resp.StatusCode)
+		fireOnRetry(attempt, resp, retryErr)
+		return true, retryErr
 	}, opts.RetryOptions); err != nil {
 		return resp, err
 	}
