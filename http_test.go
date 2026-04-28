@@ -252,7 +252,7 @@ func TestRetryRequestOnRetry(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 
 	var hookCalls []FailedAttempt
 	opts := RetryRequestOptions{
@@ -269,7 +269,7 @@ func TestRetryRequestOnRetry(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, server.URL, nil)
 	require.NoError(t, err)
 
-	resp, err := RetryRequest(context.Background(), req, opts)
+	resp, err := RetryRequest(t.Context(), req, opts)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
