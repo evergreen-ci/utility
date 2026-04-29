@@ -341,7 +341,7 @@ type RetryRequestOptions struct {
 	// the server returns a 413 status code.
 	RetryOn413 bool
 
-	// OnRetry is an optional callback ran after each failed attempt.
+	// OnRetry is an optional callback ran after each failed attempt that will be retried.
 	OnRetry func(FailedAttempt)
 }
 
