@@ -13,6 +13,7 @@ import (
 
 	"github.com/PuerkitoBio/rehttp"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/oauth2"
 )
 
@@ -26,12 +27,19 @@ func init() {
 
 func initHTTPPool() {
 	httpClientPool = &sync.Pool{
-		New: func() interface{} { return newBaseConfiguredHttpClient() },
+		New: func() any { return newBaseConfiguredHttpClient() },
 	}
 }
 
 func newBaseConfiguredHttpClient() *http.Client {
-	return DefaultHttpClient(DefaultTransport())
+	return DefaultHttpClient(newOTelTransport())
+}
+
+// newOTelTransport returns the default transport wrapped in otelhttp
+// instrumentation so that a span is created for each request that goes over the
+// wire.
+func newOTelTransport() http.RoundTripper {
+	return otelhttp.NewTransport(DefaultTransport())
 }
 
 func DefaultHttpClient(rt http.RoundTripper) *http.Client {
@@ -70,9 +78,9 @@ func PutHTTPClient(c *http.Client) {
 	c.Timeout = httpClientTimeout
 
 	switch transport := c.Transport.(type) {
-	case *http.Transport:
-		transport.TLSClientConfig.InsecureSkipVerify = false
-		c.Transport = transport
+	case *otelhttp.Transport, *http.Transport:
+		// These are the base pooled transports, so return the client to
+		// the pool as-is.
 	case *rehttp.Transport:
 		c.Transport = transport.RoundTripper
 		PutHTTPClient(c)
@@ -82,7 +90,7 @@ func PutHTTPClient(c *http.Client) {
 		PutHTTPClient(c)
 		return
 	default:
-		c.Transport = DefaultTransport()
+		c.Transport = newOTelTransport()
 	}
 
 	httpClientPool.Put(c)
