@@ -13,7 +13,6 @@ import (
 	"github.com/PuerkitoBio/rehttp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/oauth2"
 )
 
@@ -24,11 +23,14 @@ func TestPooledHTTPClient(t *testing.T) {
 		require.NotNil(t, cl)
 		require.NotPanics(t, func() { PutHTTPClient(cl) })
 	})
-	t.Run("HasOTelInstrumentation", func(t *testing.T) {
+	t.Run("ResettingSkipCert", func(t *testing.T) {
 		cl := GetHTTPClient()
-		defer PutHTTPClient(cl)
-		_, ok := cl.Transport.(*otelhttp.Transport)
-		assert.True(t, ok, "pooled client should be wrapped with otelhttp instrumentation")
+		cl.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
+		PutHTTPClient(cl)
+		cl2 := GetHTTPClient()
+		assert.Equal(t, cl, cl2)
+		assert.False(t, cl.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
+		assert.False(t, cl2.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
 	})
 	t.Run("RehttpPool", func(t *testing.T) {
 		initHTTPPool()
