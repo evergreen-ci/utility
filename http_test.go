@@ -1,7 +1,6 @@
 package utility
 
 import (
-	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,33 +12,83 @@ import (
 	"github.com/PuerkitoBio/rehttp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"golang.org/x/oauth2"
 )
 
 func TestPooledHTTPClient(t *testing.T) {
-	t.Run("Initialized", func(t *testing.T) {
-		require.NotNil(t, httpClientPool)
-		cl := GetHTTPClient()
-		require.NotNil(t, cl)
-		require.NotPanics(t, func() { PutHTTPClient(cl) })
-	})
-	t.Run("HasOTelInstrumentation", func(t *testing.T) {
-		cl := GetHTTPClient()
-		defer PutHTTPClient(cl)
-		_, ok := cl.Transport.(*otelhttp.Transport)
-		assert.True(t, ok, "pooled client should be wrapped with otelhttp instrumentation")
-	})
-	t.Run("RehttpPool", func(t *testing.T) {
-		initHTTPPool()
-		cl := GetHTTPClient()
-		clt := cl.Transport
-		PutHTTPClient(cl)
-		rcl := GetDefaultHTTPRetryableClient()
-		assert.Equal(t, cl, rcl)
-		assert.NotEqual(t, clt, rcl.Transport)
-		assert.Equal(t, clt, rcl.Transport.(*rehttp.Transport).RoundTripper)
-	})
+	t.Cleanup(initHTTPPool)
+	for testName, testCase := range map[string]func(t *testing.T){
+		"Initialized": func(t *testing.T) {
+			require.NotNil(t, httpClientPool)
+			cl := GetHTTPClient()
+			require.NotNil(t, cl)
+			require.NotPanics(t, func() { PutHTTPClient(cl) })
+		},
+		"RehttpPool": func(t *testing.T) {
+			cl := GetHTTPClient()
+			clt := cl.Transport
+			PutHTTPClient(cl)
+			rcl := GetDefaultHTTPRetryableClient()
+			assert.Equal(t, cl, rcl)
+			assert.NotEqual(t, clt, rcl.Transport)
+			assert.Equal(t, clt, rcl.Transport.(*rehttp.Transport).RoundTripper)
+		},
+	} {
+		t.Run(testName, func(t *testing.T) {
+			initHTTPPool()
+			testCase(t)
+		})
+	}
+}
+
+func TestWithOTelTracing(t *testing.T) {
+	t.Cleanup(initHTTPPool)
+	for testName, testCase := range map[string]func(t *testing.T){
+		"CreatesSpanForRequest": func(t *testing.T) {
+			recorder := tracetest.NewSpanRecorder()
+			provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+			originalProvider := otel.GetTracerProvider()
+			otel.SetTracerProvider(provider)
+			defer otel.SetTracerProvider(originalProvider)
+
+			srv := httptest.NewServer(NewMockHandler())
+			defer srv.Close()
+
+			cl := WithOTelTracing(GetHTTPClient())
+			defer PutHTTPClient(cl)
+
+			resp, err := cl.Get(srv.URL)
+			require.NoError(t, err)
+			require.NoError(t, resp.Body.Close())
+
+			require.NoError(t, provider.ForceFlush(t.Context()))
+			assert.Len(t, recorder.Ended(), 1, "should have one ended span at the end of one request")
+		},
+		"UnwrapsInstrumentationWhenReturnedToPool": func(t *testing.T) {
+			cl := WithOTelTracing(GetHTTPClient())
+			require.IsType(t, &otelTransport{}, cl.Transport)
+
+			PutHTTPClient(cl)
+
+			assert.IsType(t, &http.Transport{}, GetHTTPClient().Transport, "OTel-wrapped transport should be unwrapped when returned to pool")
+		},
+		"UnwrapsInstrumentationLayeredWithRetryableClient": func(t *testing.T) {
+			cl := WithOTelTracing(GetDefaultHTTPRetryableClient())
+			require.IsType(t, &otelTransport{}, cl.Transport)
+
+			PutHTTPClient(cl)
+
+			assert.IsType(t, &http.Transport{}, GetHTTPClient().Transport, "multiple transport wrappers should be fully unwrapped when returned to pool")
+		},
+	} {
+		t.Run(testName, func(t *testing.T) {
+			initHTTPPool()
+			testCase(t)
+		})
+	}
 }
 
 type mockTransport struct {
@@ -130,7 +179,7 @@ func TestRetryRequestOn413(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, server.URL, nil)
 	require.NoError(t, err, "failed to create request")
 
-	resp, err := RetryRequest(context.Background(), req, opts)
+	resp, err := RetryRequest(t.Context(), req, opts)
 	require.NoError(t, err, "request failed")
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode, "expected 200 status code")
@@ -225,7 +274,7 @@ func TestRetryRequestBodyRemainsValidOnSecondAttempt(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, server.URL, strings.NewReader("request body data"))
 	require.NoError(t, err, "failed to create request")
 
-	resp, err := RetryRequest(context.Background(), req, opts)
+	resp, err := RetryRequest(t.Context(), req, opts)
 	require.NoError(t, err, "request failed")
 	defer resp.Body.Close()
 

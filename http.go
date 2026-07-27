@@ -32,14 +32,7 @@ func initHTTPPool() {
 }
 
 func newBaseConfiguredHttpClient() *http.Client {
-	return DefaultHttpClient(newOTelTransport())
-}
-
-// newOTelTransport returns the default transport wrapped in otelhttp
-// instrumentation so that a span is created for each request that goes over the
-// wire.
-func newOTelTransport() http.RoundTripper {
-	return otelhttp.NewTransport(DefaultTransport())
+	return DefaultHttpClient(DefaultTransport())
 }
 
 func DefaultHttpClient(rt http.RoundTripper) *http.Client {
@@ -67,6 +60,26 @@ func DefaultTransport() *http.Transport {
 
 }
 
+// otelTransport is an http.RoundTripper with OTel instrumentation.
+type otelTransport struct {
+	base         http.RoundTripper
+	instrumented *otelhttp.Transport
+}
+
+func (t *otelTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	return t.instrumented.RoundTrip(r)
+}
+
+// WithOTelTracing wraps the client's transport with OTel instrumentation so
+// that a span is created for each request the client makes.
+func WithOTelTracing(c *http.Client) *http.Client {
+	c.Transport = &otelTransport{
+		base:         c.Transport,
+		instrumented: otelhttp.NewTransport(c.Transport),
+	}
+	return c
+}
+
 // GetHTTPClient produces default HTTP client from the pool,
 // constructing a new client if needed. Always pair calls to
 // GetHTTPClient with defered calls to PutHTTPClient.
@@ -77,10 +90,14 @@ func GetHTTPClient() *http.Client { return httpClientPool.Get().(*http.Client) }
 func PutHTTPClient(c *http.Client) {
 	c.Timeout = httpClientTimeout
 
+	// Unwrap any transport wrappers so that the client is returned to the pool
+	// in a clean state.
 	switch transport := c.Transport.(type) {
-	case *otelhttp.Transport, *http.Transport:
-		// These are the base pooled transports, so return the client to
-		// the pool as-is.
+	case *http.Transport:
+	case *otelTransport:
+		c.Transport = transport.base
+		PutHTTPClient(c)
+		return
 	case *rehttp.Transport:
 		c.Transport = transport.RoundTripper
 		PutHTTPClient(c)
@@ -90,7 +107,7 @@ func PutHTTPClient(c *http.Client) {
 		PutHTTPClient(c)
 		return
 	default:
-		c.Transport = newOTelTransport()
+		c.Transport = DefaultTransport()
 	}
 
 	httpClientPool.Put(c)
